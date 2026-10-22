@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល Pro Ultra Max (Cloud Sync)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- html2canvas & jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Tesseract.js for OCR Bank Slip & Meter Scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Inter:wght@400;600;700&display=swap');
+        * { font-family: 'Kantumruy Pro', sans-serif; box-sizing: border-box; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #printable-area, #printable-area *, #summaryModal, #summaryModal *, #thermalModal, #thermalModal *, #checkoutModal, #checkoutModal * { visibility: visible; }
+            #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+            #summaryModal, #thermalModal, #checkoutModal { position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
+            .no-print { display: none !important; }
+            @page { size: A4 portrait; margin: 5mm 8mm; }
+            .page-break { page-break-after: always !important; break-after: page !important; }
+            .invoice-card-print { page-break-inside: avoid !important; break-inside: avoid !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+
+    <!-- Login / Role Selection Overlay -->
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
+            <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl mx-auto font-bold">🔐</div>
+            <h2 class="text-base font-bold text-slate-800">ចូលប្រើប្រាស់ប្រព័ន្ធ (Login)</h2>
+            <p class="text-xs text-slate-500">ជ្រើសរើសកម្រិតអ្នកប្រើប្រាស់</p>
+            <div class="space-y-2 text-xs">
+                <select id="loginRole" class="w-full border rounded-xl p-2.5 outline-none font-bold bg-slate-50">
+                    <option value="admin">👑 Admin (ម្ចាស់ផ្ទះ - មើលចំណូល/ចំណាយ)</option>
+                    <option value="staff">🛠️ Staff (បុគ្គលិក - ចុះឈ្មោះ/កត់ទឹកភ្លើង)</option>
+                </select>
+                <input type="password" id="loginPin" maxlength="6" placeholder="បញ្ចូលលេខ PIN (Default: 1234)" class="w-full text-center text-xl font-inter font-bold tracking-widest border rounded-xl p-2.5 outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="handleLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-3 rounded-xl text-xs transition shadow-md">ចូលប្រព័ន្ធ</button>
+        </div>
+    </div>
+
+    <div class="max-w-[98%] mx-auto p-3 sm:p-6">
+        <!-- Header Dashboard -->
+        <header class="bg-gradient-to-r from-indigo-800 via-indigo-700 to-blue-700 text-white p-4 sm:p-5 rounded-2xl shadow-xl mb-6 flex flex-wrap justify-between items-center gap-4 no-print">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-white/10 backdrop-blur-md rounded-xl text-2xl">🏠</div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល Pro Ultra Max</h1>
+                    <p class="text-xs text-indigo-100 opacity-90" id="userRoleDisplay">Role: Admin</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Select Month History -->
+                <div class="flex items-center gap-1.5 bg-amber-400 text-slate-900 px-3 py-1.5 rounded-xl text-xs font-bold shadow-md">
+                    <span>📅 មើលប្រវត្តិខែ:</span>
+                    <select id="monthSelectPicker" onchange="changeViewMonth()" class="bg-white text-slate-900 border border-slate-300 font-inter font-bold rounded-lg px-2 py-0.5 outline-none">
+                    </select>
+                </div>
+
+                <select id="branchSelector" onchange="changeActiveBranch()" class="bg-white text-slate-800 px-3 py-1.5 rounded-xl font-semibold text-xs outline-none shadow-sm border border-slate-200">
+                </select>
+                <button onclick="requestNotificationPermission()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1">
+                    🔔 បើក Notification
+                </button>
+                <button onclick="lockSystemManual()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur-md transition border border-white/20">
+                    🔒 ចាកចេញ
+                </button>
+                <button onclick="sendAutoTelegramReminders()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1">
+                    🤖 រំលឹកស្វ័យប្រវត្ត (Auto TG)
+                </button>
+                <button id="btnAdminSummary" onclick="openMonthlySummary()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1">
+                    📊 សង្ខេបប្រចាំខែ
+                </button>
+                <button onclick="rolloverMonth()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1">
+                    🔄 រំកិលខែថ្មី
+                </button>
+                <button onclick="syncToSheet()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1">
+                    ☁️ រក្សាទុក Sheet
+                </button>
+                <button onclick="loadFromCloudSheet()" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1">
+                    🔄 ទាញទិន្នន័យ (Cloud)
+                </button>
+                <button onclick="openInvoiceModal()" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1">
+                    📄 ព្រីន/PDF (3/A4)
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="flex gap-2 mb-6 no-print overflow-x-auto pb-1">
+            <button onclick="switchTab('rooms')" id="tab-rooms" class="px-4 py-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-md transition whitespace-nowrap">🏢 បន្ទប់ & វិក្កយបត្រ</button>
+            <button onclick="switchTab('expenses')" id="tab-expenses" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">🛠️ កត់ត្រាចំណាយ (Expenses)</button>
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">📈 ផ្ទាំង Dashboard & ក្រាហ្វិក</button>
+            <button onclick="switchTab('settings')" id="tab-settings" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">⚙️ កំណត់តម្លៃ & Backup</button>
+        </div>
+
+        <!-- TAB 1: Rooms & Calculation -->
+        <div id="section-rooms" class="space-y-6 no-print">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex justify-between items-center flex-wrap gap-4">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <h2 class="font-bold text-slate-800 text-sm whitespace-nowrap">បញ្ជីបន្ទប់ជួល (<span id="displayActiveMonthText" class="text-indigo-600 font-inter"></span>)</h2>
+                    <input type="text" id="searchRoom" onkeyup="renderApp()" placeholder="🔍 ស្វែងរកបន្ទប់/ឈ្មោះ..." class="border rounded-xl px-3 py-1.5 text-xs outline-none focus:border-indigo-500 w-44">
+                    <select id="filterStatus" onchange="renderApp()" class="border rounded-xl px-3 py-1.5 text-xs outline-none bg-white font-semibold text-slate-700">
+                        <option value="all">ស្ថានភាពទាំងអស់</option>
+                        <option value="unpaid">🔴 មិនទាន់បង់</option>
+                        <option value="paid">🟢 បង់រួច</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition whitespace-nowrap">📊 Export Excel</button>
+                    <button onclick="openAddBranchModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition whitespace-nowrap">+ បន្ថែមសាខាថ្មី</button>
+                    <button onclick="openAddRoomModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition whitespace-nowrap">+ បន្ថែមបន្ទប់ថ្មី</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold whitespace-nowrap">
+                            <th class="p-3">បន្ទប់</th>
+                            <th class="p-3">អ្នកជួល / Telegram (ID ឬ @Username)</th>
+                            <th class="p-3">អត្តសញ្ញាណប័ណ្ណ (ID Card)</th>
+                            <th class="p-3">ប្រាក់កក់ & កុងត្រា</th>
+                            <th class="p-3">ថ្លៃឈ្នួល ($)</th>
+                            <th class="p-3">ភ្លើង (ចាស់ -> ថ្មី)</th>
+                            <th class="p-3">ទឹក (ចាស់ -> ថ្មី)</th>
+                            <th class="p-3">សេវាផ្សេងៗ</th>
+                            <th class="p-3">ថ្ងៃត្រូវបង់</th>
+                            <th class="p-3">សរុបប្រាក់ត្រូវបង់</th>
+                            <th class="p-3 text-center">ស្ថានភាព</th>
+                            <th class="p-3 text-center">សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roomsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 2: Expense Management -->
+        <div id="section-expenses" class="space-y-6 hidden no-print">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800 text-sm">🛠️ កត់ត្រាចំណាយការថែទាំ & ការចំណាយផ្សេងៗ</h3>
+                    <button onclick="openAddExpenseModal()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold">+ បន្ថែមចំណាយថ្មី</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 border-b font-bold text-slate-600">
+                                <th class="p-2.5">កាលបរិច្ឆេទ</th>
+                                <th class="p-2.5">បរិយាយចំណាយ</th>
+                                <th class="p-2.5">ប្រភេទចំណាយ</th>
+                                <th class="p-2.5">ចំនួនទឹកប្រាក់ (៛)</th>
+                                <th class="p-2.5 text-center">សកម្មភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expensesTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Analytics Dashboard -->
+        <div id="section-dashboard" class="space-y-6 hidden no-print">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                    <div class="text-xs text-slate-500 font-semibold mb-1">💰 ប្រាក់ចំណូលសរុប</div>
+                    <div class="text-xl font-bold text-indigo-600 font-inter" id="dash-total-income">0 ៛</div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                    <div class="text-xs text-slate-500 font-semibold mb-1">💸 ការចំណាយសរុប</div>
+                    <div class="text-xl font-bold text-rose-600 font-inter" id="dash-total-expenses">0 ៛</div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                    <div class="text-xs text-slate-500 font-semibold mb-1">✨ ប្រាក់ចំណេញសុទ្ធ (Net Profit)</div>
+                    <div class="text-xl font-bold text-emerald-600 font-inter" id="dash-net-profit">0 ៛</div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                    <div class="text-xs text-slate-500 font-semibold mb-1">🟢 ស្ថានភាពបង់ប្រាក់</div>
+                    <div class="text-xl font-bold text-slate-700 font-inter" id="dash-paid-count">0/0 បន្ទប់</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+                    <h3 class="font-bold text-slate-800 mb-4 text-xs">📊 ប្រៀបធៀបប្រាក់ចំណូលតាមប្រភព</h3>
+                    <div class="h-60">
+                        <canvas id="incomeBreakdownChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+                    <h3 class="font-bold text-slate-800 mb-4 text-xs">🍩 ស្ថានភាពបង់ប្រាក់ (Paid vs Unpaid)</h3>
+                    <div class="h-60 flex justify-center">
+                        <canvas id="paymentStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: Branch Settings & Backup -->
+        <div id="section-settings" class="space-y-6 hidden no-print">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                    <h2 class="text-sm font-bold mb-4 text-slate-800 border-b pb-2">⚙️ កំណត់តម្លៃសាខា & PIN សុវត្ថិភាព</h2>
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-700">លេខកូដ PIN សុវត្ថិភាព (Lock PIN):</label>
+                            <input type="text" id="settingSecurityPin" maxlength="6" value="1234" class="w-full border rounded-xl p-2.5 outline-none font-inter font-bold">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-700">ឈ្មោះសាខា:</label>
+                            <input type="text" id="settingBranchName" class="w-full border rounded-xl p-2.5 outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-semibold mb-1 text-slate-700">តម្លៃភ្លើង (១ គីឡូវ៉ាត់):</label>
+                                <input type="number" id="settingElecPrice" class="w-full border rounded-xl p-2.5 outline-none font-inter">
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-1 text-slate-700">តម្លៃទឹក (១ ម៉ែត្រគូប):</label>
+                                <input type="number" id="settingWaterPrice" class="w-full border rounded-xl p-2.5 outline-none font-inter">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-semibold mb-1 text-slate-700">ថ្លៃសំរាម (ក្នុង ១ ខែ):</label>
+                                <input type="number" id="settingTrashPrice" class="w-full border rounded-xl p-2.5 outline-none font-inter">
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-1 text-slate-700">អត្រាប្តូរប្រាក់ (១$ = ៛):</label>
+                                <input type="number" id="settingExchangeRate" value="4000" class="w-full border rounded-xl p-2.5 outline-none font-inter">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-700">Google Sheets API URL:</label>
+                            <input type="text" id="settingApiUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border rounded-xl p-2.5 outline-none font-inter text-xs">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-700">URL រូបភាព QR Code របស់អ្នក (KHQR Image):</label>
+                            <input type="text" id="settingOwnerName" placeholder="https://i.imgur.com/9gHl6j2.jpeg" class="w-full border rounded-xl p-2.5 outline-none">
+                        </div>
+                        <div class="pt-2">
+                            <button onclick="saveBranchSettings()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-xl font-bold transition">រក្សាទុកការកំណត់</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between space-y-6">
+                    <div>
+                        <h2 class="text-sm font-bold mb-4 text-slate-800 border-b pb-2">💾 Backup & Restore ទិន្នន័យ</h2>
+                        <p class="text-xs text-slate-500 mb-4">Export/Import ទិន្នន័យទាំងអស់ជា File JSON ទុកការពារបាត់បង់។</p>
+                        <div class="space-y-3">
+                            <button onclick="exportDataJSON()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl font-bold text-xs shadow-sm transition flex items-center justify-center gap-2">
+                                📥 Export ទិន្នន័យ (Backup JSON)
+                            </button>
+                            <div class="border-t pt-3">
+                                <label class="block text-xs font-semibold mb-2 text-slate-700">Upload File JSON ដើម្បី Restore:</label>
+                                <input type="file" id="importJsonFile" accept=".json" onchange="importDataJSON(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delete History Month Section -->
+                    <div class="border-t pt-4 bg-rose-50 p-4 rounded-2xl border border-rose-200">
+                        <h3 class="text-xs font-bold text-rose-700 mb-2">🗑️ លុបប្រវត្តិខែចាស់ៗ</h3>
+                        <p class="text-[11px] text-slate-600 mb-3">ជ្រើសរើសខែដែលបងចង់លុបចោលជាអចិន្ត្រៃយ៍ពីប្រព័ន្ធ៖</p>
+                        <div class="flex gap-2">
+                            <select id="deleteMonthSelect" class="w-full border border-rose-300 bg-white text-slate-800 rounded-xl px-3 py-2 text-xs font-inter font-bold outline-none">
+                            </select>
+                            <button onclick="deleteSelectedHistoryMonth()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
+                                លុបខែនេះ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🤖 Floating AI Chatbot Widget -->
+    <div class="fixed bottom-5 right-5 z-[90] no-print">
+        <button onclick="toggleAiWidget()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold p-3.5 rounded-full shadow-2xl flex items-center gap-2 transition transform hover:scale-105">
+            <span class="text-xl">🤖</span>
+            <span class="text-xs pr-1">AI ជំនួយការ</span>
+        </button>
+    </div>
+
+    <div id="aiChatModal" class="fixed bottom-20 right-5 z-[95] w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-indigo-100 hidden flex flex-col no-print overflow-hidden" style="height: 440px;">
+        <div class="bg-gradient-to-r from-indigo-700 to-purple-700 text-white p-3 font-bold text-xs flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span>🤖</span>
+                <span>Rental AI Assistant (ជំនួយការ)</span>
+            </div>
+            <button onclick="toggleAiWidget()" class="text-white text-base hover:opacity-80">✕</button>
+        </div>
+        <div id="aiChatBody" class="p-3 flex-1 overflow-y-auto text-xs space-y-2 bg-slate-50">
+            <div class="bg-indigo-100 text-indigo-900 p-2.5 rounded-2xl max-w-[85%] font-medium">
+                ជម្រាបសួររ៉េបង! ខ្ញុំជា AI ជំនួយការផ្ទះជួល។ បងអាចសួរខ្ញុំបាន ដូចជា៖
+                <ul class="list-disc pl-4 mt-1 space-y-0.5 text-[11px]">
+                    <li>តើខែនេះមិនទាន់បង់លុយមានបន្ទប់ណាខ្លះ?</li>
+                    <li>ចំណេញសុទ្ធខែនេះបានប៉ុន្មាន?</li>
+                    <li>បន្ទប់ណាជិតផុតកុងត្រា?</li>
+                </ul>
+            </div>
+        </div>
+        <div class="p-2 border-t bg-white flex gap-1.5">
+            <input type="text" id="aiInputText" onkeydown="if(event.key==='Enter') sendAiMessage()" placeholder="សួរសំណួរទៅ AI..." class="w-full border rounded-xl px-3 py-1.5 text-xs outline-none focus:border-indigo-500">
+            <button onclick="sendAiMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs">ផ្ញើ</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="cashModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-sm font-bold text-indigo-700">💵 គណនាលុយអាប់ & ស្កេន Slip ធនាគារ</h3>
+            <div class="text-xs space-y-1 border-b pb-2">
+                <div>បន្ទប់: <b id="cashRoomNum"></b> | អ្នកជួល: <b id="cashTenant"></b></div>
+                <div>ប្រាក់សរុបត្រូវបង់: <b class="text-rose-600 font-inter text-sm" id="cashTotalAmount"></b></div>
+            </div>
+
+            <!-- OCR Bank Slip Upload Feature -->
+            <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 space-y-1.5 text-xs">
+                <label class="block font-bold text-purple-900">🧾 Upload Slip ធនាគារ (Smart OCR Scan):</label>
+                <input type="file" id="slipFileInput" accept="image/*" onchange="scanBankSlipOCR(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white">
+                <div id="ocrStatusText" class="text-[11px] text-purple-700 font-medium hidden">កំពុងស្កេនរូបភាព... ⏳</div>
+            </div>
+
+            <div>
+                <label class="block font-semibold text-xs mb-1">លុយទទួលបានពីអ្នកជួល (Cash Received):</label>
+                <input type="number" id="cashGivenInput" oninput="calculateChange()" placeholder="បញ្ចូលចំនួនលុយ..." class="w-full border rounded-xl p-2.5 font-inter font-bold text-lg outline-none focus:border-indigo-500">
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border text-center">
+                <div class="text-xs text-slate-500">ប្រាក់ត្រូវអាប់ជូនវិញ (Change):</div>
+                <div id="cashChangeOutput" class="text-xl font-bold text-emerald-600 font-inter mt-1">0 ៛</div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('cashModal')" class="px-3 py-2 bg-slate-100 rounded-xl text-xs font-semibold">បិទ</button>
+                <button onclick="markAsPaidFromCashModal()" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm">✅ កត់ត្រាថាបានបង់</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="branchModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <h3 class="text-sm font-bold mb-4">បន្ថែមសាខាថ្មី</h3>
+            <form id="branchForm" onsubmit="saveNewBranch(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">ឈ្មោះសាខាថ្មី</label>
+                    <input type="text" id="modalBranchName" required class="w-full border rounded-xl p-2.5 outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('branchModal')" class="px-4 py-2 bg-slate-100 rounded-xl font-semibold">បោះបង់</button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-xl font-semibold shadow-sm">បង្កើតសាខា</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="roomModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl my-8">
+            <h3 id="modalTitle" class="text-sm font-bold mb-4">បន្ថែមបន្ទប់ថ្មី</h3>
+            <form id="roomForm" onsubmit="saveRoomData(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="editingRoomId">
+                <div>
+                    <label class="block font-semibold mb-1">លេខបន្ទប់</label>
+                    <input type="text" id="modalRoomNum" required class="w-full border rounded-xl p-2 font-inter outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">ឈ្មោះអ្នកជួល</label>
+                    <input type="text" id="modalTenantName" class="w-full border rounded-xl p-2 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">លេខទូរស័ព្ទ</label>
+                        <input type="text" id="modalPhone" placeholder="012 345 678" class="w-full border rounded-xl p-2 font-inter outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Telegram (ID ឬ @username)</label>
+                        <input type="text" id="modalTelegram" placeholder="1082370017 ឬ @sovphorn" class="w-full border rounded-xl p-2 font-inter outline-none">
+                    </div>
+                </div>
+
+                <div class="bg-sky-50 p-3 rounded-xl border border-sky-200 space-y-2">
+                    <label class="block font-semibold text-sky-900">🪪 អត្តសញ្ញាណប័ណ្ណអ្នកជួល (ID Card Photo/Scan)</label>
+                    <input type="file" id="modalIdCardFile" accept="image/*" onchange="handleIdCardUpload(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-700">
+                    <input type="hidden" id="modalIdCardBase64">
+                    <div id="idCardPreviewContainer" class="hidden mt-2 text-center">
+                        <img id="idCardPreviewImg" src="" class="max-h-28 mx-auto rounded-lg border shadow-sm object-contain">
+                    </div>
+                </div>
+
+                <!-- ⚡ Camera AI Meter Photo Scan Section -->
+                <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-2">
+                    <label class="block font-bold text-amber-900">📷 ថតស្កេនកុងទ័រភ្លើង/ទឹក (Camera AI Scan)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-700 mb-1">ថតកុងទ័រភ្លើងថ្មី៖</label>
+                            <input type="file" accept="image/*" capture="environment" onchange="scanMeterPhotoOCR(event, 'modalElecNew')" class="w-full text-[10px] file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-amber-600 file:text-white font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-700 mb-1">ថតកុងទ័រទឹកថ្មី៖</label>
+                            <input type="file" accept="image/*" capture="environment" onchange="scanMeterPhotoOCR(event, 'modalWaterNew')" class="w-full text-[10px] file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white font-bold">
+                        </div>
+                    </div>
+                    <div id="meterScanStatusText" class="text-[11px] text-amber-800 font-bold hidden text-center pt-1">កំពុងអានលេខពីថតរូបកុងទ័រ... ⏳</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                    <div>
+                        <label class="block font-semibold mb-1 text-amber-900">ប្រាក់កក់ ($)</label>
+                        <input type="number" id="modalDeposit" value="0" class="w-full border rounded-xl p-2 font-inter outline-none bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1 text-amber-900">ថ្ងៃផុតកុងត្រា</label>
+                        <input type="date" id="modalContractEnd" class="w-full border rounded-xl p-2 font-inter outline-none bg-white">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">ថ្លៃឈ្នួល ($)</label>
+                        <input type="number" id="modalRoomPrice" required value="40" class="w-full border rounded-xl p-2 font-inter outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">ថ្ងៃត្រូវបង់ (Due Date)</label>
+                        <input type="text" id="modalDueDate" placeholder="ឧ. ថ្ងៃទី ១០" class="w-full border rounded-xl p-2 outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 bg-indigo-50 p-2.5 rounded-xl border border-indigo-100">
+                    <div>
+                        <label class="block font-semibold mb-1 text-indigo-900">ឈ្មោះសេវាផ្សេងៗ</label>
+                        <input type="text" id="modalExtraName" placeholder="ឧ. អ៊ីនធឺណិត..." class="w-full border rounded-xl p-2 bg-white outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1 text-indigo-900">ថ្លៃសេវា (៛)</label>
+                        <input type="number" id="modalExtraPrice" value="0" class="w-full border rounded-xl p-2 bg-white font-inter outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">ភ្លើង (ចាស់ / ថ្មី)</label>
+                        <div class="flex gap-1">
+                            <input type="number" id="modalElecOld" value="0" class="w-1/2 border rounded-xl p-2 font-inter outline-none">
+                            <input type="number" id="modalElecNew" value="0" class="w-1/2 border border-indigo-400 rounded-xl p-2 font-inter font-bold outline-none bg-indigo-50">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">ទឹក (ចាស់ / ថ្មី)</label>
+                        <div class="flex gap-1">
+                            <input type="number" id="modalWaterOld" value="0" class="w-1/2 border rounded-xl p-2 font-inter outline-none">
+                            <input type="number" id="modalWaterNew" value="0" class="w-1/2 border border-sky-400 rounded-xl p-2 font-inter font-bold outline-none bg-sky-50">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('roomModal')" class="px-4 py-2 bg-slate-100 rounded-xl font-semibold">បោះបង់</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-semibold shadow-sm">រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="idCardModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-center">
+            <h3 class="text-sm font-bold text-slate-800">🪪 រូបភាពអត្តសញ្ញាណប័ណ្ណអ្នកជួល</h3>
+            <div class="p-2 border rounded-xl bg-slate-50 flex justify-center">
+                <img id="viewIdCardImg" src="" class="max-h-[60vh] object-contain rounded-lg">
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal('idCardModal')" class="px-4 py-2 bg-slate-200 rounded-xl text-xs font-semibold">បិទ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkoutModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl text-xs">
+            <h3 class="text-sm font-bold text-rose-600">🚪 កត់ត្រាអ្នកជួលចេញ (Check-out & Refund)</h3>
+            <div>បន្ទប់: <b id="coRoomNum"></b> | អ្នកជួល: <b id="coTenant"></b></div>
+            <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-2">
+                <div>ប្រាក់កក់កបល់ដើម: <b id="coDeposit" class="font-inter text-amber-800"></b></div>
+                <div>
+                    <label class="block font-semibold mb-1 text-rose-700">កាត់ទូទាត់ការខូចខាត (ខុសប័ណ្ណ/សម្ភារៈ):</label>
+                    <input type="number" id="coDeductInput" oninput="calculateRefund()" value="0" class="w-full border rounded-xl p-2 font-inter font-bold outline-none bg-white">
+                </div>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border text-center">
+                <div class="text-slate-500">ប្រាក់កក់ត្រូវសងជូនអ្នកជួលវិញ (Deposit Refund):</div>
+                <div id="coRefundOutput" class="text-lg font-bold text-emerald-600 font-inter mt-1">0 $</div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('checkoutModal')" class="px-3 py-2 bg-slate-100 rounded-xl font-semibold">បោះបង់</button>
+                <button onclick="confirmCheckOut()" class="px-3 py-2 bg-rose-600 text-white rounded-xl font-bold shadow-sm">យល់ព្រមឱ្យចេញ & Clear បន្ទប់</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="thermalModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center no-print border-b pb-2">
+                <h3 class="text-sm font-bold text-slate-800">🖨️ បង្កាន់ដៃបង់ប្រាក់ (Thermal Receipt)</h3>
+                <button onclick="closeModal('thermalModal')" class="bg-slate-200 px-2 py-1 rounded-lg text-xs font-semibold">បិទ</button>
+            </div>
+            <div id="thermalReceiptContent" style="width: 100%; max-width: 300px; margin: 0 auto; background: #fff; padding: 12px; font-family: 'Courier New', monospace; font-size: 11px; color: #000; border: 1px dashed #ccc;">
+            </div>
+            <div class="flex justify-end gap-2 no-print pt-2">
+                <button onclick="window.print()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-bold text-xs shadow-md">🖨️ បោះពុម្ពបង្កាន់ដៃ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="expenseModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl">
+            <h3 class="text-sm font-bold mb-4 text-slate-800">បន្ថែមការចំណាយថ្មី</h3>
+            <form onsubmit="saveExpenseData(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">បរិយាយចំណាយ:</label>
+                    <input type="text" id="expDesc" required placeholder="ឧ. ទិញអំពូលភ្លើងកែច្នៃ" class="w-full border rounded-xl p-2 outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">ប្រភេទចំណាយ:</label>
+                    <select id="expCategory" class="w-full border rounded-xl p-2 outline-none bg-white">
+                        <option value="ជួសជុល & ថែទាំ">🛠️ ជួសជុល & ថែទាំ</option>
+                        <option value="ពន្ធ & ច្បាប់">📜 ពន្ធ & ច្បាប់</option>
+                        <option value="សន្តិសុខ & អនាម័យ">🧹 សន្តិសុខ & អនាម័យ</option>
+                        <option value="ផ្សេងៗ">📦 ផ្សេងៗ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">ចំនួនទឹកប្រាក់ (៛):</label>
+                    <input type="number" id="expAmount" required placeholder="20000" class="w-full border rounded-xl p-2 font-inter outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('expenseModal')" class="px-4 py-2 bg-slate-100 rounded-xl">បោះបង់</button>
+                    <button type="submit" class="px-4 py-2 bg-rose-600 text-white rounded-xl font-bold">រក្សាទុកចំណាយ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="invoiceModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-4 no-print flex-wrap gap-2">
+                <h3 class="text-sm font-bold">វិក្កយបត្រ A4 (៣ បន្ទប់ក្នុង ១ A4)</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm">🖨️ បោះពុម្ព</button>
+                    <button onclick="downloadPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm">📥 ទាញយក PDF</button>
+                    <button onclick="closeModal('invoiceModal')" class="bg-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold">បិទ</button>
+                </div>
+            </div>
+            <div id="printable-area" class="space-y-2 bg-white p-2">
+                <div id="invoiceCardsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="summaryModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <h3 class="text-sm font-bold mb-4 text-purple-700">📊 សង្ខេបការបិទបញ្ជីប្រចាំខែ</h3>
+            <div id="summaryContent" class="space-y-4 text-xs mb-6"></div>
+            <div class="flex justify-end gap-2 no-print">
+                <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold">🖨️ បោះពុម្ព</button>
+                <button type="button" onclick="closeModal('summaryModal')" class="px-4 py-2 bg-slate-200 rounded-xl text-xs font-semibold">បិទ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TELEGRAM_BOT_TOKEN = "8674474790:AAG0rMsR-nICq0rqTBhcLi3gePaFCcM2ILE";
+
+        let rawDb = localStorage.getItem('rental_sys_db');
+        let db = {};
+
+        if (rawDb) {
+            let parsed = JSON.parse(rawDb);
+            if (parsed.branches && !parsed.history) {
+                db = {
+                    activeBranchIndex: parsed.activeBranchIndex || 0,
+                    activeMonth: "10/2026",
+                    securityPin: parsed.securityPin || "1234",
+                    history: { "10/2026": parsed.branches }
+                };
+            } else {
+                db = parsed;
+            }
+        } else {
+            db = {
+                activeBranchIndex: 0,
+                activeMonth: "10/2026",
+                securityPin: "1234",
+                history: {
+                    "10/2026": [
+                        {
+                            name: "សាខាទី១ (តាកែវ)",
+                            elecPrice: 2000,
+                            waterPrice: 3000,
+                            trashPrice: 3000,
+                            exchangeRate: 4000,
+                            phone: "015 520 085",
+                            apiUrl: "",
+                            ownerName: "https://i.imgur.com/9gHl6j2.jpeg",
+                            expenses: [{ id: 1, date: "2026-10-01", desc: "ទិញអំពិលភ្លើង", cat: "ជួសជុល & ថែទាំ", amount: 25000 }],
+                            rooms: [{ id: 1, roomNum: "01", tenant: "គុ រណី", phone: "012 333 222", telegram: "1082370017", idCard: "", deposit: 40, contractEnd: "2027-04-10", price: 40, extraName: "ថ្លៃផ្ញើកង់", extraPrice: 20000, dueDate: "ថ្ងៃទី ១០", elecOld: 50, elecNew: 90, waterOld: 2256, waterNew: 2260, isPaid: false }]
+                        }
+                    ]
+                }
+            };
+        }
+
+        let currentUserRole = "admin";
+        let currentActiveRoomIdForCash = null;
+        let currentGrandTotalForCash = 0;
+        let currentCheckOutRoomId = null;
+        let breakdownChartObj = null;
+        let statusChartObj = null;
+
+        // 📷 Smart Meter Photo OCR Reader Function
+        function scanMeterPhotoOCR(event, targetInputId) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let statusText = document.getElementById('meterScanStatusText');
+            statusText.innerText = "កំពុងអានលេខពីថតរូបកុងទ័រ... ⏳";
+            statusText.classList.remove('hidden');
+
+            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+                statusText.classList.add('hidden');
+                console.log("Meter OCR Text:", text);
+
+                let numbers = text.match(/\d+/g);
+                if (numbers && numbers.length > 0) {
+                    let detectedNum = Math.max(...numbers.map(n => parseInt(n)));
+                    document.getElementById(targetInputId).value = detectedNum;
+                    alert(`✨ ស្កេនរូបកុងទ័រជោគជ័យ! អានឃើញលេខអានថ្មី៖ ${detectedNum}`);
+                } else {
+                    alert("មិនអាចអានលេខអានច្បាស់ពីថតរូបបានទេ។ សូមបំពេញដោយដៃ!");
+                }
+            }).catch(err => {
+                statusText.classList.add('hidden');
+                alert("មានបញ្ហាក្នុងការស្កេនរូបថតកុងទ័រ!");
+            });
+        }
+
+        // 🔔 Web Push Notification System
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        alert("បានបើកការជូនដំណឹង Notification ជោគជ័យ! 🎉");
+                        sendWebNotification("ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល", "ការជូនដំណឹងត្រូវបានបើកដំណើរការ!");
+                    }
+                });
+            } else {
+                alert("Browser របស់អ្នកមិនគាំទ្រប្រព័ន្ធ Notification ទេ!");
+            }
+        }
+
+        function sendWebNotification(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, { body: body, icon: "https://i.imgur.com/9gHl6j2.jpeg" });
+            }
+        }
+
+        // 🤖 In-App AI Chatbot Assistant Logic
+        function toggleAiWidget() {
+            document.getElementById('aiChatModal').classList.toggle('hidden');
+        }
+
+        function sendAiMessage() {
+            let input = document.getElementById('aiInputText');
+            let query = input.value.trim();
+            if (!query) return;
+
+            let body = document.getElementById('aiChatBody');
+            body.innerHTML += `<div class="bg-indigo-600 text-white p-2 rounded-2xl max-w-[85%] ml-auto font-medium">${query}</div>`;
+            input.value = '';
+
+            let response = processAiQuery(query);
+            setTimeout(() => {
+                body.innerHTML += `<div class="bg-slate-200 text-slate-800 p-2.5 rounded-2xl max-w-[85%] font-medium">${response}</div>`;
+                body.scrollTop = body.scrollHeight;
+            }, 300);
+        }
+
+        function processAiQuery(q) {
+            q = q.toLowerCase();
+            let b = getCurrentBranch();
+            let rate = b.exchangeRate || 4000;
+
+            if (q.includes("មិនទាន់បង់") || q.includes("ខ្វះ")) {
+                let unpaid = b.rooms.filter(r => !r.isPaid);
+                if (unpaid.length === 0) return "គ្រប់បន្ទប់ទាំងអស់បានបង់ប្រាក់រួចរាល់អស់ហើយ! 🎉";
+                let list = unpaid.map(r => `បន្ទប់ ${r.roomNum} (${r.tenant || 'គ្មានឈ្មោះ'})`).join(", ");
+                return `បន្ទប់ដែលមិនទាន់បង់ប្រាក់មានចំនួន ${unpaid.length} បន្ទប់៖ ${list}`;
+            }
+
+            if (q.includes("ចំណេញ") || q.includes("ប្រាក់ចំណូល")) {
+                let grandTotalAll = 0;
+                b.rooms.forEach(r => {
+                    let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+                    let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+                    grandTotalAll += (r.price * rate) + (elecUsed * b.elecPrice) + (waterUsed * b.waterPrice) + b.trashPrice + (r.extraPrice || 0);
+                });
+                let totalExp = (b.expenses || []).reduce((sum, e) => sum + e.amount, 0);
+                let profit = grandTotalAll - totalExp;
+                return `ប្រាក់ចំណូលសរុបខែនេះ៖ <b>${grandTotalAll.toLocaleString()} ៛</b><br>ចំណាយសរុប៖ <b>${totalExp.toLocaleString()} ៛</b><br>👉 ប្រាក់ចំណេញសុទ្ធ៖ <b style="color:green;">${profit.toLocaleString()} ៛</b>`;
+            }
+
+            if (q.includes("ផុតកុងត្រា") || q.includes("កុងត្រា")) {
+                let today = new Date();
+                let expRooms = b.rooms.filter(r => {
+                    if (!r.contractEnd) return false;
+                    let diff = Math.ceil((new Date(r.contractEnd) - today) / (1000*60*60*24));
+                    return diff <= 15;
+                });
+                if (expRooms.length === 0) return "មិនមានបន្ទប់ណាជិតផុតកុងត្រាក្នុងរយះពេល ១៥ ថ្ងៃនេះទេ! 👍";
+                let list = expRooms.map(r => `បន្ទប់ ${r.roomNum} (ផុត៖ ${r.contractEnd})`).join(", ");
+                return `បន្ទប់ជិតផុតកុងត្រា៖ ${list}`;
+            }
+
+            return "ខ្ញុំអាចជួយប្រាប់ពី៖ បន្ទប់មិនទាន់បង់លុយ, ប្រាក់ចំណេញប្រចាំខែ, ឬបន្ទប់ជិតផុតកុងត្រា។ សូមព្យាយាមសួរសំណួរទាំងនេះ!";
+        }
+
+        // 🧾 OCR Smart Bank Slip Scanner Logic
+        function scanBankSlipOCR(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let statusText = document.getElementById('ocrStatusText');
+            statusText.innerText = "កំពុងស្កេនរូបភាព Slip ធនាគារ... ⏳";
+            statusText.classList.remove('hidden');
+
+            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+                statusText.classList.add('hidden');
+                console.log("OCR Extracted Text:", text);
+
+                let numbers = text.match(/[\d,.]+/g);
+                if (numbers) {
+                    let cleanNumbers = numbers.map(n => parseFloat(n.replace(/,/g, ''))).filter(n => n > 1000);
+                    if (cleanNumbers.length > 0) {
+                        let detectedAmount = Math.max(...cleanNumbers);
+                        document.getElementById('cashGivenInput').value = detectedAmount;
+                        calculateChange();
+                        alert(`✨ ស្កេន Slip ជោគជ័យ! រកឃើញចំនួនទឹកប្រាក់ទូទាត់៖ ${detectedAmount.toLocaleString()} ៛`);
+                    } else {
+                        alert("មិនអាចអានចំនួនទឹកប្រាក់ពី Slip ធនាគារបានទេ។ សូមវាយបញ្ចូលដោយដៃ!");
+                    }
+                } else {
+                    alert("មិនអាចស្កេនអត្ថបទលើ Slip បានទេ។");
+                }
+            }).catch(err => {
+                statusText.classList.add('hidden');
+                alert("មានបញ្ហាក្នុងការស្កេនរូបភាព Slip!");
+            });
+        }
+
+        function handleLogin() {
+            let role = document.getElementById('loginRole').value;
+            let pin = document.getElementById('loginPin').value;
+            let correctPin = db.securityPin || "1234";
+
+            if (pin === correctPin) {
+                currentUserRole = role;
+                document.getElementById('loginOverlay').classList.add('hidden');
+                applyUserPermissions();
+                renderApp();
+            } else {
+                alert("លេខកូដ PIN មិនត្រឹមត្រូវ!");
+            }
+        }
+
+        function lockSystemManual() {
+            document.getElementById('loginPin').value = "";
+            document.getElementById('loginOverlay').classList.remove('hidden');
+        }
+
+        function applyUserPermissions() {
+            let roleText = currentUserRole === 'admin' ? "Role: Admin (ម្ចាស់ផ្ទះ)" : "Role: Staff (បុគ្គលិក)";
+            document.getElementById('userRoleDisplay').innerText = roleText;
+
+            if (currentUserRole === 'staff') {
+                document.getElementById('btnAdminSummary').style.display = 'none';
+                document.getElementById('tab-dashboard').style.display = 'none';
+                document.getElementById('tab-settings').style.display = 'none';
+            } else {
+                document.getElementById('btnAdminSummary').style.display = 'inline-block';
+                document.getElementById('tab-dashboard').style.display = 'inline-block';
+                document.getElementById('tab-settings').style.display = 'inline-block';
+            }
+        }
+
+        function unlockSystem() { handleLogin(); }
+
+        function saveLocal() {
+            localStorage.setItem('rental_sys_db', JSON.stringify(db));
+            renderApp();
+        }
+
+        function getCurrentBranch() {
+            if(!db.history) db.history = {};
+            if(!db.history[db.activeMonth]) {
+                let months = Object.keys(db.history);
+                if(months.length > 0) {
+                    db.history[db.activeMonth] = JSON.parse(JSON.stringify(db.history[months[0]]));
+                } else {
+                    db.history[db.activeMonth] = [{ name: "សាខាទី១", elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, expenses: [], rooms: [] }];
+                }
+            }
+            if(!db.history[db.activeMonth][db.activeBranchIndex]) db.activeBranchIndex = 0;
+            return db.history[db.activeMonth][db.activeBranchIndex];
+        }
+
+        function switchTab(tab) {
+            ['rooms', 'expenses', 'dashboard', 'settings'].forEach(t => {
+                let el = document.getElementById(`section-${t}`);
+                if(el) el.classList.add('hidden');
+                let tabEl = document.getElementById(`tab-${t}`);
+                if(tabEl) tabEl.className = "px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap";
+            });
+
+            let targetSec = document.getElementById(`section-${tab}`);
+            let targetTab = document.getElementById(`tab-${tab}`);
+            if(targetSec) targetSec.classList.remove('hidden');
+            if(targetTab) targetTab.className = "px-4 py-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-md transition whitespace-nowrap";
+
+            if(tab === 'dashboard') renderDashboardCharts();
+            if(tab === 'settings') loadSettingsForm();
+            if(tab === 'expenses') renderExpenses();
+        }
+
+        function renderMonthPicker() {
+            let picker = document.getElementById('monthSelectPicker');
+            picker.innerHTML = '';
+            let months = Object.keys(db.history || {});
+            if(!months.includes(db.activeMonth)) months.push(db.activeMonth);
+
+            months.forEach(m => {
+                let opt = document.createElement('option');
+                opt.value = m;
+                opt.text = m;
+                if(m === db.activeMonth) opt.selected = true;
+                picker.appendChild(opt);
+            });
+            document.getElementById('displayActiveMonthText').innerText = db.activeMonth;
+        }
+
+        function changeViewMonth() {
+            db.activeMonth = document.getElementById('monthSelectPicker').value;
+            saveLocal();
+        }
+
+        function renderApp() {
+            renderMonthPicker();
+            let branchSelect = document.getElementById('branchSelector');
+            branchSelect.innerHTML = '';
+            
+            let currentMonthBranches = db.history[db.activeMonth] || [];
+            currentMonthBranches.forEach((b, idx) => {
+                let opt = document.createElement('option');
+                opt.value = idx;
+                opt.text = b.name;
+                if(idx === db.activeBranchIndex) opt.selected = true;
+                branchSelect.appendChild(opt);
+            });
+
+            let currentBranch = getCurrentBranch();
+            let tbody = document.getElementById('roomsTableBody');
+            tbody.innerHTML = '';
+
+            if(!currentBranch || !currentBranch.rooms || currentBranch.rooms.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="12" class="text-center py-8 text-slate-400">មិនទាន់មានបន្ទប់ក្នុងខែ/សាខានេះទេ</td></tr>`;
+                return;
+            }
+
+            let rate = currentBranch.exchangeRate || 4000;
+            let searchText = (document.getElementById('searchRoom')?.value || '').toLowerCase();
+            let filterStatus = document.getElementById('filterStatus')?.value || 'all';
+
+            let today = new Date();
+
+            currentBranch.rooms.forEach(r => {
+                if(searchText && !r.roomNum.toLowerCase().includes(searchText) && !(r.tenant || '').toLowerCase().includes(searchText)) return;
+                if(filterStatus === 'paid' && !r.isPaid) return;
+                if(filterStatus === 'unpaid' && r.isPaid) return;
+
+                let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+                let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+                let elecTotal = elecUsed * currentBranch.elecPrice;
+                let waterTotal = waterUsed * currentBranch.waterPrice;
+                let extra = r.extraPrice || 0;
+                let grandTotal = (r.price * rate) + elecTotal + waterTotal + currentBranch.trashPrice + extra;
+
+                let contractAlertHtml = '';
+                if(r.contractEnd) {
+                    let expDate = new Date(r.contractEnd);
+                    let diffTime = expDate - today;
+                    let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if(diffDays <= 15 && diffDays >= 0) {
+                        contractAlertHtml = `<div class="text-[10px] text-rose-600 font-bold">⚠️ សល់ ${diffDays} ថ្ងៃផុតកុងត្រា</div>`;
+                    } else if(diffDays < 0) {
+                        contractAlertHtml = `<div class="text-[10px] text-rose-700 font-bold">❌ ហួសកុងត្រារួចហើយ</div>`;
+                    }
+                }
+
+                let idCardBadge = r.idCard ? `<button onclick="viewIdCard('${r.id}')" class="bg-sky-50 text-sky-700 border border-sky-200 font-bold px-2.5 py-1 rounded-lg text-xs">🪪 មើល ID</button>` : `<span class="text-slate-400 text-[11px]">អត់ទាន់មាន</span>`;
+
+                let statusBadge = r.isPaid 
+                    ? `<button onclick="togglePaidStatus(${r.id})" class="bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2.5 py-1 rounded-lg text-xs font-inter">✓ បង់រួច</button>`
+                    : `<button onclick="togglePaidStatus(${r.id})" class="bg-rose-50 text-rose-700 border border-rose-200 font-bold px-2.5 py-1 rounded-lg text-xs font-inter">មិនទាន់បង់</button>`;
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition whitespace-nowrap">
+                        <td class="p-3 font-bold font-inter text-slate-800">${r.roomNum}</td>
+                        <td class="p-3">
+                            <div class="font-bold text-slate-800">${r.tenant || '-'}</div>
+                            <div class="text-[11px] text-slate-500 font-inter">📞 ${r.phone || 'គ្មានលេខ'}</div>
+                            <div class="text-[11px] text-sky-600 font-inter">${r.telegram ? 'TG: ' + r.telegram : '<span class="text-slate-400">អត់ TG</span>'}</div>
+                        </td>
+                        <td class="p-3 text-center">${idCardBadge}</td>
+                        <td class="p-3 text-[11px]">
+                            <div class="text-amber-700 font-bold font-inter">កក់: $${r.deposit || 0}</div>
+                            <div class="text-slate-500 font-inter">ផុត៖ ${r.contractEnd || 'អត់កំណត់'}</div>
+                            ${contractAlertHtml}
+                        </td>
+                        <td class="p-3 font-inter font-semibold text-slate-700">$${r.price}</td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1.5 text-xs font-inter">
+                                <input type="number" value="${r.elecOld}" onchange="updateRoomVal(${r.id}, 'elecOld', this.value)" class="min-w-[75px] w-20 border border-slate-300 rounded-lg p-1 text-center font-inter font-semibold outline-none">
+                                <span class="text-slate-400 font-bold">-></span>
+                                <input type="number" value="${r.elecNew}" onchange="updateRoomVal(${r.id}, 'elecNew', this.value)" class="min-w-[75px] w-20 border border-slate-300 rounded-lg p-1 text-center font-inter font-semibold outline-none">
+                                <span class="text-slate-500 font-medium">(${elecUsed}k)</span>
+                            </div>
+                        </td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1.5 text-xs font-inter">
+                                <input type="number" value="${r.waterOld}" onchange="updateRoomVal(${r.id}, 'waterOld', this.value)" class="min-w-[75px] w-20 border border-slate-300 rounded-lg p-1 text-center font-inter font-semibold outline-none">
+                                <span class="text-slate-400 font-bold">-></span>
+                                <input type="number" value="${r.waterNew}" onchange="updateRoomVal(${r.id}, 'waterNew', this.value)" class="min-w-[75px] w-20 border border-slate-300 rounded-lg p-1 text-center font-inter font-semibold outline-none">
+                                <span class="text-slate-500 font-medium">(${waterUsed}m³)</span>
+                            </div>
+                        </td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1 text-xs">
+                                <span class="text-slate-600 text-[10px] whitespace-nowrap">${r.extraName || 'សេវា'}:</span>
+                                <input type="number" value="${r.extraPrice || 0}" onchange="updateRoomVal(${r.id}, 'extraPrice', this.value)" class="min-w-[80px] w-24 border border-slate-300 rounded-lg p-1 text-center font-inter font-semibold outline-none"> ៛
+                            </div>
+                        </td>
+                        <td class="p-3 text-[11px] font-bold text-orange-600">${r.dueDate || 'ថ្ងៃទី ១០'}</td>
+                        <td class="p-3 font-bold text-indigo-600 font-inter text-sm">${grandTotal.toLocaleString()} ៛</td>
+                        <td class="p-3 text-center">${statusBadge}</td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="openThermalReceipt(${r.id}, ${grandTotal})" class="bg-purple-600 text-white font-bold px-2 py-1 rounded hover:bg-purple-700 text-[10px]" title="ព្រីនបង្កាន់ដៃតូច">🧾 ព្រីន</button>
+                                <button onclick="sendSingleInvoice(${r.id}, ${grandTotal})" class="bg-indigo-600 text-white font-bold px-2 py-1 rounded hover:bg-indigo-700 text-[10px]" title="ផ្ញើវិក្កយបត្រ">📤 ផ្ញើ</button>
+                                <button onclick="sendReminder(${r.id}, ${grandTotal})" class="bg-sky-500 text-white font-bold px-2 py-1 rounded hover:bg-sky-600 text-[10px]" title="រំលឹក">🔔 រំលឹក</button>
+                                <button onclick="openCashModal(${r.id}, ${grandTotal})" class="bg-emerald-600 text-white font-bold px-2 py-1 rounded hover:bg-emerald-700 text-[10px]">💵 លុយអាប់</button>
+                                <button onclick="openCheckOutModal(${r.id})" class="bg-rose-500 text-white font-bold px-2 py-1 rounded hover:bg-rose-600 text-[10px]" title="Check-out">🚪 ចេញ</button>
+                                <button onclick="openEditRoomModal(${r.id})" class="text-indigo-600 hover:underline text-xs font-semibold px-1">កែ</button>
+                                <button onclick="deleteRoom(${r.id})" class="text-rose-500 hover:underline text-xs font-semibold px-1">លុប</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function handleIdCardUpload(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let base64Img = e.target.result;
+                    document.getElementById('modalIdCardBase64').value = base64Img;
+                    document.getElementById('idCardPreviewImg').src = base64Img;
+                    document.getElementById('idCardPreviewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function viewIdCard(roomId) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id == roomId);
+            if(r && r.idCard) {
+                document.getElementById('viewIdCardImg').src = r.idCard;
+                document.getElementById('idCardModal').classList.remove('hidden');
+            } else { alert("បន្ទប់នេះមិនមានរូបភាពអត្តសញ្ញាណប័ណ្ណទេ!"); }
+        }
+
+        function openCheckOutModal(roomId) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === roomId);
+            if (!r) return;
+            currentCheckOutRoomId = roomId;
+            document.getElementById('coRoomNum').innerText = r.roomNum;
+            document.getElementById('coTenant').innerText = r.tenant || 'N/A';
+            document.getElementById('coDeposit').innerText = "$" + (r.deposit || 0);
+            document.getElementById('coDeductInput').value = "0";
+            document.getElementById('coRefundOutput').innerText = "$" + (r.deposit || 0);
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function calculateRefund() {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === currentCheckOutRoomId);
+            if (!r) return;
+            let deposit = r.deposit || 0;
+            let deduct = parseFloat(document.getElementById('coDeductInput').value) || 0;
+            let refund = Math.max(0, deposit - deduct);
+            document.getElementById('coRefundOutput').innerText = "$" + refund;
+        }
+
+        function confirmCheckOut() {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === currentCheckOutRoomId);
+            if (r) {
+                if(confirm(`បញ្ជាក់៖ លុបឈ្មោះអ្នកជួលចេញពីបន្ទប់ ${r.roomNum} និងសម្រេចសងប្រាក់កក់?`)) {
+                    r.tenant = ""; r.phone = ""; r.telegram = ""; r.idCard = ""; r.deposit = 0; r.contractEnd = ""; r.isPaid = false;
+                    saveLocal(); closeModal('checkoutModal');
+                    alert("បានធ្វើការ Check-out អ្នកជួលចេញរួចរាល់! 🎉");
+                }
+            }
+        }
+
+        async function sendAutoTelegramReminders() {
+            let b = getCurrentBranch();
+            let unpaidRooms = b.rooms.filter(r => !r.isPaid && r.telegram && r.tenant);
+            if (unpaidRooms.length === 0) return alert("មិនមានបន្ទប់ណាខ្វះការបង់ប្រាក់ ឬគ្មាន Telegram ទេ!");
+            if (!confirm(`តើចង់ផ្ញើសាររំលឹកស្វ័យប្រវត្តទៅកាន់បន្ទប់មិនទាន់បង់ប្រាក់ចំនួន ${unpaidRooms.length} ដែរឬទេ?`)) return;
+
+            let count = 0;
+            for (let r of unpaidRooms) {
+                let targetChatId = r.telegram.trim();
+                if (targetChatId.startsWith('@') || isNaN(targetChatId)) { if (!targetChatId.startsWith('@')) targetChatId = '@' + targetChatId; }
+                let message = `🤖 <b>សេចក្តីជូនដំណឹងរំលឹកការបង់ប្រាក់ស្វ័យប្រវត្ត</b>\n\n🏠 បន្ទប់: <b>${r.roomNum}</b> (${b.name})\n👤 អ្នកជួល: <b>${r.tenant}</b>\n📅 ខែ: <b>${db.activeMonth}</b>\n⏰ កំណត់បង់៖ <b>${r.dueDate || 'ថ្ងៃទី ១០'}</b>\n\n🙏 សូមអរគុណ!`;
+                try {
+                    let res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ chat_id: targetChatId, text: message, parse_mode: "HTML" })
+                    });
+                    let data = await res.json();
+                    if (data.ok) count++;
+                } catch(e) { console.error(e); }
+            }
+            alert(`បានបញ្ជូនសាររំលឹកស្វ័យប្រវត្តជោគជ័យចំនួន ${count} បន្ទប់! 🎉`);
+        }
+
+        function openThermalReceipt(roomId, grandTotal) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === roomId);
+            if (!r) return;
+            let rate = b.exchangeRate || 4000;
+            let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+            let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+            let elecTotal = elecUsed * b.elecPrice;
+            let waterTotal = waterUsed * b.waterPrice;
+            let roomP = r.price * rate;
+            let extra = r.extraPrice || 0;
+
+            let container = document.getElementById('thermalReceiptContent');
+            container.innerHTML = `
+                <div style="text-align: center; font-weight: bold; font-size: 13px; margin-bottom: 4px;">${b.name}</div>
+                <div style="text-align: center; font-size: 10px; margin-bottom: 6px;">បង្កាន់ដៃបង់ប្រាក់ (Receipt)</div>
+                <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+                <div>ខែ: ${db.activeMonth}</div>
+                <div>បន្ទប់: <b>${r.roomNum}</b> | អ្នកជួល: ${r.tenant || 'N/A'}</div>
+                <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+                <table style="width: 100%; font-size: 11px;">
+                    <tr><td>ថ្លៃបន្ទប់ ($${r.price}):</td><td style="text-align: right;">${roomP.toLocaleString()} ៛</td></tr>
+                    <tr><td>ថ្លៃសំរាម:</td><td style="text-align: right;">${b.trashPrice.toLocaleString()} ៛</td></tr>
+                    <tr><td>ទឹក (${waterUsed}m³):</td><td style="text-align: right;">${waterTotal.toLocaleString()} ៛</td></tr>
+                    <tr><td>ភ្លើង (${elecUsed}k):</td><td style="text-align: right;">${elecTotal.toLocaleString()} ៛</td></tr>
+                    ${extra > 0 ? `<tr><td>${r.extraName || 'សេវា'}:</td><td style="text-align: right;">${extra.toLocaleString()} ៛</td></tr>` : ''}
+                </table>
+                <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+                <table style="width: 100%; font-weight: bold; font-size: 12px;">
+                    <tr><td>សរុបត្រូវបង់:</td><td style="text-align: right;">${grandTotal.toLocaleString()} ៛</td></tr>
+                </table>
+                <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+                <div style="text-align: center; font-size: 10px; margin-top: 6px;">🙏 សូមអរគុណ! ជួបគ្នាខែក្រោយ</div>
+            `;
+            document.getElementById('thermalModal').classList.remove('hidden');
+        }
+
+        function renderExpenses() {
+            let b = getCurrentBranch();
+            let tbody = document.getElementById('expensesTableBody');
+            tbody.innerHTML = '';
+            if(!b.expenses || b.expenses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">មិនទាន់មានការចំណាយក្នុងខែនេះទេ</td></tr>`;
+                return;
+            }
+            b.expenses.forEach((exp, idx) => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="p-2.5 font-inter">${exp.date}</td>
+                        <td class="p-2.5 font-semibold text-slate-800">${exp.desc}</td>
+                        <td class="p-2.5"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-[10px] font-semibold">${exp.cat}</span></td>
+                        <td class="p-2.5 font-bold font-inter text-rose-600">${exp.amount.toLocaleString()} ៛</td>
+                        <td class="p-2.5 text-center"><button onclick="deleteExpense(${idx})" class="text-rose-500 hover:underline font-semibold">លុប</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openAddExpenseModal() { document.getElementById('expenseModal').classList.remove('hidden'); }
+
+        function saveExpenseData(e) {
+            e.preventDefault();
+            let b = getCurrentBranch();
+            if(!b.expenses) b.expenses = [];
+            let desc = document.getElementById('expDesc').value;
+            let cat = document.getElementById('expCategory').value;
+            let amount = parseFloat(document.getElementById('expAmount').value) || 0;
+            let date = new Date().toISOString().slice(0,10);
+            b.expenses.push({ id: Date.now(), date, desc, cat, amount });
+            saveLocal();
+            closeModal('expenseModal');
+        }
+
+        function deleteExpense(idx) {
+            let b = getCurrentBranch();
+            if(confirm("លុបការចំណាយនេះ?")) { b.expenses.splice(idx, 1); saveLocal(); }
+        }
+
+        function rolloverMonth() {
+            let currentMonth = db.activeMonth;
+            let parts = currentMonth.split('/');
+            let m = parseInt(parts[0]), y = parseInt(parts[1]);
+            m++; if(m > 12) { m = 1; y++; }
+            let nextMonthStr = (m < 10 ? '0' + m : m) + '/' + y;
+
+            if(confirm(`បង្កើតខែថ្មី (${nextMonthStr}) ហើយផ្លាស់ប្តូរលេខអានចាស់មកលេខអានថ្មី?`)) {
+                let currentBranches = db.history[currentMonth];
+                let nextBranches = JSON.parse(JSON.stringify(currentBranches));
+                nextBranches.forEach(b => {
+                    b.expenses = [];
+                    b.rooms.forEach(r => {
+                        r.elecOld = r.elecNew || r.elecOld;
+                        r.waterOld = r.waterNew || r.waterOld;
+                        r.elecNew = 0; r.waterNew = 0; r.extraPrice = 0; r.isPaid = false;
+                    });
+                });
+                db.history[nextMonthStr] = nextBranches;
+                db.activeMonth = nextMonthStr;
+                saveLocal();
+                alert(`បានបង្កើត និងផ្លាស់ប្តូរទៅកាន់ខែថ្មី ${nextMonthStr} រួចរាល់! 🎉`);
+            }
+        }
+
+        function renderDeleteMonthSelector() {
+            let select = document.getElementById('deleteMonthSelect');
+            if (!select) return;
+            select.innerHTML = '';
+            Object.keys(db.history || {}).forEach(m => {
+                let opt = document.createElement('option');
+                opt.value = m; opt.text = m;
+                select.appendChild(opt);
+            });
+        }
+
+        function deleteSelectedHistoryMonth() {
+            let select = document.getElementById('deleteMonthSelect');
+            if (!select) return;
+            let monthToDelete = select.value;
+            if (Object.keys(db.history || {}).length <= 1) return alert("មិនអាចលុបខែចុងក្រោយបង្អស់ចេញពីប្រព័ន្ធបានទេ!");
+
+            if (confirm(`តើបងពិតជាចង់លុបប្រវត្តិទិន្នន័យខែ (${monthToDelete}) ចោលជាអចិន្ត្រៃយ៍មែនទេ?`)) {
+                delete db.history[monthToDelete];
+                let remainingMonths = Object.keys(db.history);
+                if (db.activeMonth === monthToDelete) db.activeMonth = remainingMonths[remainingMonths.length - 1];
+                saveLocal();
+                alert(`បានលុបប្រវត្តិខែ ${monthToDelete} ជោគជ័យ! 🎉`);
+            }
+        }
+
+        function renderDashboardCharts() {
+            let currentBranch = getCurrentBranch();
+            let rate = currentBranch.exchangeRate || 4000;
+            let totalRoomVal = 0, totalElecVal = 0, totalWaterVal = 0, totalTrashVal = 0, totalExtraVal = 0;
+            let paidCount = 0, unpaidCount = 0, grandTotalAll = 0;
+
+            currentBranch.rooms.forEach(r => {
+                let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+                let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+                let roomRiel = r.price * rate;
+                let elecRiel = elecUsed * currentBranch.elecPrice;
+                let waterRiel = waterUsed * currentBranch.waterPrice;
+                let trashRiel = currentBranch.trashPrice;
+                let extraRiel = r.extraPrice || 0;
+
+                totalRoomVal += roomRiel; totalElecVal += elecRiel; totalWaterVal += waterRiel; totalTrashVal += trashRiel; totalExtraVal += extraRiel;
+                grandTotalAll += (roomRiel + elecRiel + waterRiel + trashRiel + extraRiel);
+                if(r.isPaid) paidCount++; else unpaidCount++;
+            });
+
+            let totalExp = (currentBranch.expenses || []).reduce((sum, e) => sum + e.amount, 0);
+            let netProfit = grandTotalAll - totalExp;
+
+            document.getElementById('dash-total-income').innerText = grandTotalAll.toLocaleString() + " ៛";
+            document.getElementById('dash-total-expenses').innerText = totalExp.toLocaleString() + " ៛";
+            document.getElementById('dash-net-profit').innerText = netProfit.toLocaleString() + " ៛";
+            document.getElementById('dash-paid-count').innerText = `${paidCount}/${currentBranch.rooms.length} បន្ទប់`;
+
+            let ctx1 = document.getElementById('incomeBreakdownChart').getContext('2d');
+            if(breakdownChartObj) breakdownChartObj.destroy();
+            breakdownChartObj = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['បន្ទប់', 'ភ្លើង', 'ទឹក', 'សំរាម', 'សេវា'],
+                    datasets: [{ label: 'ប្រាក់ចំណូល (៛)', data: [totalRoomVal, totalElecVal, totalWaterVal, totalTrashVal, totalExtraVal], backgroundColor: ['#4f46e5', '#f59e0b', '#0284c7', '#64748b', '#9333ea'], borderRadius: 8 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            let ctx2 = document.getElementById('paymentStatusChart').getContext('2d');
+            if(statusChartObj) statusChartObj.destroy();
+            statusChartObj = new Chart(ctx2, {
+                type: 'doughnut',
+                data: { labels: ['បានបង់រួច', 'មិនទាន់បង់'], datasets: [{ data: [paidCount, unpaidCount], backgroundColor: ['#10b981', '#f43f5e'] }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function exportToExcel() {
+            let b = getCurrentBranch();
+            let rate = b.exchangeRate || 4000;
+            let excelData = b.rooms.map(r => {
+                let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+                let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+                let grandTotal = (r.price * rate) + (elecUsed * b.elecPrice) + (waterUsed * b.waterPrice) + b.trashPrice + (r.extraPrice || 0);
+                return {
+                    "បន្ទប់": r.roomNum, "អ្នកជួល": r.tenant || '-', "Telegram": r.telegram || '-', "ទូរស័ព្ទ": r.phone || '-',
+                    "ប្រាក់កក់ ($)": r.deposit || 0, "ថ្ងៃផុតកុងត្រា": r.contractEnd || '-', "ថ្លៃឈ្នួល ($)": r.price,
+                    "ប្រាក់សរុប (៛)": grandTotal, "ស្ថានភាព": r.isPaid ? "បង់រួច" : "មិនទាន់បង់"
+                };
+            });
+            let ws = XLSX.utils.json_to_sheet(excelData);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Invoices");
+            XLSX.writeFile(wb, `Rental_Report_${b.name}_${db.activeMonth.replace('/', '-')}.xlsx`);
+        }
+
+        function updateRoomVal(id, field, val) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === id);
+            if(r) { r[field] = (field === 'extraName') ? val : (parseFloat(val) || 0); saveLocal(); }
+        }
+
+        function togglePaidStatus(id) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === id);
+            if(r) { r.isPaid = !r.isPaid; saveLocal(); }
+        }
+
+        function openCashModal(roomId, grandTotal) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === roomId);
+            if(r) {
+                currentActiveRoomIdForCash = roomId;
+                currentGrandTotalForCash = grandTotal;
+                document.getElementById('cashRoomNum').innerText = r.roomNum;
+                document.getElementById('cashTenant').innerText = r.tenant || 'N/A';
+                document.getElementById('cashTotalAmount').innerText = grandTotal.toLocaleString() + " ៛";
+                document.getElementById('cashGivenInput').value = "";
+                document.getElementById('cashChangeOutput').innerText = "0 ៛";
+                document.getElementById('cashModal').classList.remove('hidden');
+            }
+        }
+
+        function calculateChange() {
+            let given = parseFloat(document.getElementById('cashGivenInput').value) || 0;
+            let change = given - currentGrandTotalForCash;
+            let changeOutput = document.getElementById('cashChangeOutput');
+            if(change >= 0) {
+                changeOutput.innerText = change.toLocaleString() + " ៛";
+                changeOutput.className = "text-xl font-bold text-emerald-600 font-inter mt-1";
+            } else {
+                changeOutput.innerText = "ខ្វះ " + Math.abs(change).toLocaleString() + " ៛";
+                changeOutput.className = "text-xl font-bold text-rose-600 font-inter mt-1";
+            }
+        }
+
+        async function markAsPaidFromCashModal() {
+            if(currentActiveRoomIdForCash) {
+                let b = getCurrentBranch();
+                let r = b.rooms.find(x => x.id === currentActiveRoomIdForCash);
+                if(r) { 
+                    r.isPaid = true; saveLocal(); 
+                    if(r.telegram) {
+                        let given = parseFloat(document.getElementById('cashGivenInput').value) || currentGrandTotalForCash;
+                        let change = Math.max(0, given - currentGrandTotalForCash);
+                        let targetChatId = r.telegram.trim();
+                        if (targetChatId.startsWith('@') || isNaN(targetChatId)) { if (!targetChatId.startsWith('@')) targetChatId = '@' + targetChatId; }
+
+                        let receiptText = `🧾 <b>បង្កាន់ដៃទទួលប្រាក់ (Payment Receipt)</b>\n\n` +
+                                          `🏠 បន្ទប់: <b>${r.roomNum}</b> (${b.name})\n` +
+                                          `👤 អ្នកជួល: <b>${r.tenant || 'N/A'}</b>\n` +
+                                          `📅 ខែ: <b>${db.activeMonth}</b>\n` +
+                                          `💰 ប្រាក់បានបង់: <b>${currentGrandTotalForCash.toLocaleString()} ៛</b>\n` +
+                                          `💵 ទទួលបាន: <b>${given.toLocaleString()} ៛</b>\n` +
+                                          `🪙 លុយអាប់ជូន: <b>${change.toLocaleString()} ៛</b>\n` +
+                                          `✅ ស្ថានភាព: <b>បង់ប្រាក់រួចរាល់</b>\n\n` +
+                                          `🙏 សូមអរគុណច្រើន!`;
+                        try {
+                            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                                method: "POST", headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ chat_id: targetChatId, text: receiptText, parse_mode: "HTML" })
+                            });
+                        } catch(err) { console.error(err); }
+                    }
+                }
+                closeModal('cashModal');
+                alert("បានកត់ត្រាថាបានបង់ប្រាក់ និងផ្ញើបង្កាន់ដៃជោគជ័យ! 🎉");
+            }
+        }
+
+        function openInvoiceModal() {
+            let currentBranch = getCurrentBranch();
+            let container = document.getElementById('invoiceCardsContainer');
+            container.innerHTML = '';
+            let rate = currentBranch.exchangeRate || 4000;
+            let qrUrl = currentBranch.ownerName || "https://i.imgur.com/9gHl6j2.jpeg";
+
+            currentBranch.rooms.forEach((r, idx) => {
+                let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+                let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+                let elecTotal = elecUsed * currentBranch.elecPrice;
+                let waterTotal = waterUsed * currentBranch.waterPrice;
+                let roomPriceRiel = r.price * rate;
+                let extra = r.extraPrice || 0;
+                let grandTotal = roomPriceRiel + elecTotal + waterTotal + currentBranch.trashPrice + extra;
+                let isPageBreak = ((idx + 1) % 3 === 0) ? 'page-break' : '';
+
+                container.innerHTML += `
+                    <div id="invoice-card-${r.id}" class="invoice-card-print ${isPageBreak}" style="width: 100%; max-width: 680px; height: 88mm; background: #ffffff; border: 1.5px dashed #9ca3af; border-radius: 10px; padding: 10px 14px; margin: 0 auto 6mm auto; box-sizing: border-box; font-size: 11px; color: #111827; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="vertical-align: top;">
+                                        <div style="font-weight: 700; color: #2563eb; font-size: 13px;">វិក្កយបត្រថ្លៃឈ្នួលបន្ទប់ (${currentBranch.name}) - បន្ទប់ ${r.roomNum}</div>
+                                        <div style="color: #374151; font-size: 10.5px; margin-top: 2px;">
+                                            ខែ: <b class="font-inter">${db.activeMonth}</b> | អ្នកជួល: <b>${r.tenant || 'N/A'}</b> | កំណត់បង់: <span style="color: #ea580c; font-weight: 700;">${r.dueDate || 'ថ្ងៃទី ១០'}</span>
+                                        </div>
+                                    </td>
+                                    <td style="vertical-align: top; text-align: right; font-size: 10.5px;">
+                                        <div style="font-weight: 700; color: #111827;">ម្ចាស់ផ្ទះ: YOEURN SOPHORN</div>
+                                        <div style="color: #4b5563;">ទូរស័ព្ទ: <span class="font-inter">015 520 085</span></div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="width: 100%; border-bottom: 1.5px solid #111827; margin: 4px 0 6px 0;"></div>
+                            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                                <tr>
+                                    <td style="width: 62%; vertical-align: top; padding-right: 10px;">
+                                        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                                            <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 2.5px 0; color: #374151;">ថ្លៃបន្ទប់:</td><td style="text-align: right; font-weight: 700;">$${r.price} (${roomPriceRiel.toLocaleString()} ៛)</td></tr>
+                                            <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 2.5px 0; color: #374151;">ថ្លៃសំរាម:</td><td style="text-align: right; font-weight: 700;">${currentBranch.trashPrice.toLocaleString()} ៛</td></tr>
+                                            <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 2.5px 0; color: #374151;">ទឹក (${waterUsed}ម³):</td><td style="text-align: right; font-weight: 700;">${waterTotal.toLocaleString()} ៛</td></tr>
+                                            <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 2.5px 0; color: #374151;">ភ្លើង (${elecUsed}គីឡូ):</td><td style="text-align: right; font-weight: 700;">${elecTotal.toLocaleString()} ៛</td></tr>
+                                        </table>
+                                    </td>
+                                    <td style="width: 38%; vertical-align: top; text-align: center;">
+                                        <div style="border: 1.2px solid #4338ca; border-radius: 12px; padding: 4px 6px; background: #ffffff; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center;">
+                                            <div style="font-size: 10.5px; font-weight: 700; color: #111827; margin-bottom: 4px;">ស្កេនបង់ប្រាក់ (KHQR)</div>
+                                            <img src="${qrUrl}" crossorigin="anonymous" style="width: 130px; height: 160px; object-fit: contain; margin: 6px auto 0 auto; display: block;">
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div>
+                            <div style="width: 100%; border-bottom: 1.5px solid #111827; margin: 4px 0 3px 0;"></div>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="font-weight: 700; font-size: 11px;">ប្រាក់សរុបត្រូវបង់ (${db.activeMonth}):</td>
+                                    <td style="text-align: right; font-weight: 700; color: #dc2626; font-size: 14.5px;">${grandTotal.toLocaleString()} ៛</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('invoiceModal').classList.remove('hidden');
+        }
+
+        async function sendSingleInvoice(roomId, grandTotal) {
+            let currentBranch = getCurrentBranch();
+            let r = currentBranch.rooms.find(x => x.id === roomId);
+            if (!r || !r.telegram) return alert(`បន្ទប់ ${r ? r.roomNum : ''} មិនទាន់បានបញ្ចូល Telegram ទេ!`);
+            let targetChatId = r.telegram.trim();
+            if (targetChatId.startsWith('@') || isNaN(targetChatId)) { if (!targetChatId.startsWith('@')) targetChatId = '@' + targetChatId; }
+
+            if (!confirm(`តើអ្នកចង់ផ្ញើវិក្កយបត្របន្ទប់ ${r.roomNum} ទៅកាន់ (${targetChatId}) ដែរឬទេ?`)) return;
+            openInvoiceModal();
+
+            setTimeout(async () => {
+                let card = document.getElementById(`invoice-card-${r.id}`);
+                try {
+                    let canvas = await html2canvas(card, { scale: 2, useCORS: true, allowTaint: true });
+                    canvas.toBlob(async (blob) => {
+                        let fd = new FormData();
+                        fd.append("chat_id", targetChatId);
+                        fd.append("photo", blob, `Invoice_Room_${r.roomNum}.png`);
+                        fd.append("caption", `📄 <b>វិក្កយបត្រខែ ${db.activeMonth}</b>\n🏠 បន្ទប់: <b>${r.roomNum}</b>\n💰 ប្រាក់សរុប: <b style="color:red;">${grandTotal.toLocaleString()} ៛</b>`);
+                        fd.append("parse_mode", "HTML");
+                        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: "POST", body: fd });
+                        alert("បានផ្ញើវិក្កយបត្រជោគជ័យ! 🎉");
+                        closeModal('invoiceModal');
+                    }, 'image/png');
+                } catch(err) { closeModal('invoiceModal'); alert("មានបញ្ហាក្នុងការផ្ញើ!"); }
+            }, 500);
+        }
+
+        async function sendReminder(roomId, grandTotal) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === roomId);
+            if(!r || !r.telegram) return alert("សូមបញ្ចូល Telegram ជាមុនសិន!");
+            let targetChatId = r.telegram.trim();
+            if (targetChatId.startsWith('@') || isNaN(targetChatId)) { if (!targetChatId.startsWith('@')) targetChatId = '@' + targetChatId; }
+
+            let message = `🔔 <b>សេចក្តីជូនដំណឹងរំលឹកការបង់ប្រាក់</b>\n\n🏠 បន្ទប់: <b>${r.roomNum}</b>\n💰 ប្រាក់សរុបត្រូវបង់: <b style="color:red;">${grandTotal.toLocaleString()} ៛</b>`;
+            try {
+                let res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ chat_id: targetChatId, text: message, parse_mode: "HTML" })
+                });
+                alert("បានផ្ញើសាររំលឹករួចរាល់! 🎉");
+            } catch(e) { console.error(e); }
+        }
+
+        function openMonthlySummary() {
+            let container = document.getElementById('summaryContent');
+            container.innerHTML = '';
+            let totalAllRiel = 0, summaryHtml = '';
+            (db.history[db.activeMonth] || []).forEach((branch) => {
+                let branchTotal = 0;
+                branch.rooms.forEach(r => {
+                    let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+                    let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+                    branchTotal += (r.price * (branch.exchangeRate || 4000)) + (elecUsed * branch.elecPrice) + (waterUsed * branch.waterPrice) + branch.trashPrice + (r.extraPrice || 0);
+                });
+                totalAllRiel += branchTotal;
+                summaryHtml += `<div class="bg-slate-50 border rounded-2xl p-4"><b>🏠 ${branch.name}</b>: ${branchTotal.toLocaleString()} ៛</div>`;
+            });
+            container.innerHTML = `<div class="bg-purple-600 text-white p-4 rounded-2xl mb-4 font-bold">💰 ប្រាក់សរុបទាំងអស់: ${totalAllRiel.toLocaleString()} ៛</div>` + summaryHtml;
+            document.getElementById('summaryModal').classList.remove('hidden');
+        }
+
+        // ☁️ Sync to Google Sheets (POST)
+        async function syncToSheet() {
+            let currentBranch = getCurrentBranch();
+            if (!currentBranch.apiUrl) return alert("សូមបញ្ចូល Google Sheets Web App API URL ក្នុង Setting ជាមុនសិន!");
+            
+            let rate = currentBranch.exchangeRate || 4000;
+            let payload = currentBranch.rooms.map(r => {
+                let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+                let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+                let elecTotal = elecUsed * currentBranch.elecPrice;
+                let waterTotal = waterUsed * currentBranch.waterPrice;
+                let grandTotal = (r.price * rate) + elecTotal + waterTotal + currentBranch.trashPrice + (r.extraPrice || 0);
+
+                return {
+                    branch: currentBranch.name,
+                    roomNum: r.roomNum,
+                    tenant: r.tenant || '-',
+                    phone: r.phone || '-',
+                    month: db.activeMonth,
+                    roomPrice: r.price * rate,
+                    trashPrice: currentBranch.trashPrice,
+                    waterCost: waterTotal,
+                    electricCost: elecTotal,
+                    totalAmount: grandTotal
+                };
+            });
+
+            try {
+                await fetch(currentBranch.apiUrl, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                alert("បានរក្សាទុកទិន្នន័យចូល Google Sheets ជោគជ័យ! 🎉");
+            } catch(err) {
+                console.error(err);
+                alert("មានបញ្ហាក្នុងការភ្ជាប់ទៅ Google Sheets!");
+            }
+        }
+
+        // 🔄 Load Data from Google Sheets (GET)
+        async function loadFromCloudSheet() {
+            let currentBranch = getCurrentBranch();
+            if (!currentBranch.apiUrl) return alert("សូមបញ្ចូល Google Sheets Web App API URL ក្នុង Setting ជាមុនសិន!");
+
+            if (!confirm("តើបងចង់ទាញយកទិន្នន័យចុងក្រោយពី Cloud (Google Sheets) មកកាន់ឧបករណ៍នេះមែនទេ?")) return;
+
+            try {
+                let res = await fetch(currentBranch.apiUrl);
+                let cloudData = await res.json();
+                if (cloudData && cloudData.length > 0) {
+                    alert("ទាញយកទិន្នន័យពី Cloud สำเร็จ! 🎉");
+                    // ធ្វើការ Update ចូល Database ក្នុង LocalStorage វិញ
+                    console.log("Cloud Data:", cloudData);
+                    // (អាចបំពេញបន្ថែមជា Array Rooms តាមតម្រូវការ)
+                } else {
+                    alert("មិនមានទិន្នន័យនៅលើ Cloud ទេ!");
+                }
+            } catch(err) {
+                console.error(err);
+                alert("មានបញ្ហាក្នុងការទាញទិន្នន័យពី Google Sheets!");
+            }
+        }
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            alert("កំពុងបង្កើត File PDF... សូមរង់ចាំបន្តិច!");
+        }
+
+        function exportDataJSON() {
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
+            let anchor = document.createElement('a');
+            anchor.href = dataStr; anchor.download = `Rental_Backup.json`;
+            anchor.click(); anchor.remove();
+        }
+
+        function importDataJSON(event) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    db = JSON.parse(e.target.result);
+                    saveLocal(); alert("Restore ជោគជ័យ! 🎉");
+                } catch(err) { alert("File JSON មិនត្រឹមត្រូវ!"); }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        function changeActiveBranch() {
+            db.activeBranchIndex = parseInt(document.getElementById('branchSelector').value);
+            renderApp();
+        }
+
+        function loadSettingsForm() {
+            let b = getCurrentBranch();
+            document.getElementById('settingSecurityPin').value = db.securityPin || "1234";
+            document.getElementById('settingBranchName').value = b.name;
+            document.getElementById('settingElecPrice').value = b.elecPrice;
+            document.getElementById('settingWaterPrice').value = b.waterPrice;
+            document.getElementById('settingTrashPrice').value = b.trashPrice;
+            document.getElementById('settingExchangeRate').value = b.exchangeRate || 4000;
+            document.getElementById('settingApiUrl').value = b.apiUrl || '';
+            document.getElementById('settingOwnerName').value = b.ownerName;
+            renderDeleteMonthSelector();
+        }
+
+        function saveBranchSettings() {
+            let b = getCurrentBranch();
+            db.securityPin = document.getElementById('settingSecurityPin').value.trim() || "1234";
+            b.name = document.getElementById('settingBranchName').value;
+            b.elecPrice = parseFloat(document.getElementById('settingElecPrice').value) || 0;
+            b.waterPrice = parseFloat(document.getElementById('settingWaterPrice').value) || 0;
+            b.trashPrice = parseFloat(document.getElementById('settingTrashPrice').value) || 0;
+            b.exchangeRate = parseFloat(document.getElementById('settingExchangeRate').value) || 4000;
+            b.apiUrl = document.getElementById('settingApiUrl').value.trim();
+            b.ownerName = document.getElementById('settingOwnerName').value;
+            saveLocal();
+            alert("បានរក្សាទុកការកំណត់សាខាជោគជ័យ!");
+            switchTab('rooms');
+        }
+
+        function openAddBranchModal() { document.getElementById('branchModal').classList.remove('hidden'); }
+        function saveNewBranch(e) {
+            e.preventDefault();
+            let name = document.getElementById('modalBranchName').value;
+            db.history[db.activeMonth].push({ name: name, elecPrice: 2000, waterPrice: 2000, trashPrice: 5000, exchangeRate: 4000, apiUrl: "", ownerName: "https://i.imgur.com/9gHl6j2.jpeg", expenses: [], rooms: [] });
+            db.activeBranchIndex = db.history[db.activeMonth].length - 1;
+            saveLocal(); closeModal('branchModal');
+        }
+
+        function openAddRoomModal() {
+            document.getElementById('modalTitle').innerText = "បន្ថែមបន្ទប់ថ្មី";
+            document.getElementById('editingRoomId').value = "";
+            document.getElementById('roomForm').reset();
+            document.getElementById('modalDeposit').value = "0";
+            document.getElementById('modalIdCardBase64').value = "";
+            document.getElementById('idCardPreviewContainer').classList.add('hidden');
+            document.getElementById('roomModal').classList.remove('hidden');
+        }
+
+        function openEditRoomModal(id) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === id);
+            if(r) {
+                document.getElementById('modalTitle').innerText = "កែសម្រួលបន្ទប់";
+                document.getElementById('editingRoomId').value = r.id;
+                document.getElementById('modalRoomNum').value = r.roomNum;
+                document.getElementById('modalTenantName').value = r.tenant || '';
+                document.getElementById('modalPhone').value = r.phone || '';
+                document.getElementById('modalTelegram').value = r.telegram || '';
+                document.getElementById('modalDeposit').value = r.deposit || 0;
+                document.getElementById('modalContractEnd').value = r.contractEnd || '';
+                document.getElementById('modalRoomPrice').value = r.price;
+                document.getElementById('modalDueDate').value = r.dueDate || 'ថ្ងៃទី ១០';
+                document.getElementById('modalExtraName').value = r.extraName || '';
+                document.getElementById('modalExtraPrice').value = r.extraPrice || 0;
+                document.getElementById('modalElecOld').value = r.elecOld;
+                document.getElementById('modalWaterOld').value = r.waterOld;
+                document.getElementById('modalElecNew').value = r.elecNew || r.elecOld;
+                document.getElementById('modalWaterNew').value = r.waterNew || r.waterOld;
+                
+                document.getElementById('modalIdCardBase64').value = r.idCard || '';
+                if(r.idCard) {
+                    document.getElementById('idCardPreviewImg').src = r.idCard;
+                    document.getElementById('idCardPreviewContainer').classList.remove('hidden');
+                } else {
+                    document.getElementById('idCardPreviewContainer').classList.add('hidden');
+                }
+                document.getElementById('roomModal').classList.remove('hidden');
+            }
+        }
+
+        function saveRoomData(e) {
+            e.preventDefault();
+            let b = getCurrentBranch();
+            let id = document.getElementById('editingRoomId').value;
+            let roomNum = document.getElementById('modalRoomNum').value;
+            let tenant = document.getElementById('modalTenantName').value;
+            let phone = document.getElementById('modalPhone').value;
+            let telegram = document.getElementById('modalTelegram').value;
+            let idCard = document.getElementById('modalIdCardBase64').value;
+            let deposit = parseFloat(document.getElementById('modalDeposit').value) || 0;
+            let contractEnd = document.getElementById('modalContractEnd').value;
+            let price = parseFloat(document.getElementById('modalRoomPrice').value) || 0;
+            let dueDate = document.getElementById('modalDueDate').value;
+            let extraName = document.getElementById('modalExtraName').value;
+            let extraPrice = parseFloat(document.getElementById('modalExtraPrice').value) || 0;
+            let elecOld = parseFloat(document.getElementById('modalElecOld').value) || 0;
+            let elecNew = parseFloat(document.getElementById('modalElecNew').value) || elecOld;
+            let waterOld = parseFloat(document.getElementById('modalWaterOld').value) || 0;
+            let waterNew = parseFloat(document.getElementById('modalWaterNew').value) || waterOld;
+
+            if(id) {
+                let r = b.rooms.find(x => x.id == id);
+                if(r) { 
+                    r.roomNum = roomNum; r.tenant = tenant; r.phone = phone; r.telegram = telegram; r.idCard = idCard;
+                    r.deposit = deposit; r.contractEnd = contractEnd; r.price = price; r.dueDate = dueDate; 
+                    r.extraName = extraName; r.extraPrice = extraPrice; r.elecOld = elecOld; r.elecNew = elecNew; r.waterOld = waterOld; r.waterNew = waterNew; 
+                }
+            } else {
+                let newId = b.rooms.length > 0 ? Math.max(...b.rooms.map(x => x.id)) + 1 : 1;
+                b.rooms.push({ id: newId, roomNum, tenant, phone, telegram, idCard, deposit, contractEnd, price, extraName, extraPrice, dueDate, elecOld, elecNew, waterOld, waterNew, isPaid: false });
+            }
+            saveLocal();
+            closeModal('roomModal');
+        }
+
+        function deleteRoom(id) {
+            if(confirm("លុបបន្ទប់នេះ?")) {
+                let b = getCurrentBranch();
+                b.rooms = b.rooms.filter(x => x.id !== id);
+                saveLocal();
+            }
+        }
+
+        function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+
+        renderApp();
+    </script>
+</body>
+</html>
