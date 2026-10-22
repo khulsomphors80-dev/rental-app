@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល </title>
+    <title>ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -1462,7 +1462,7 @@
         // ☁️ Sync to Google Sheets (POST)
         async function syncToSheet() {
             let currentBranch = getCurrentBranch();
-            if (!currentBranch.apiUrl) return alert("សូមបញ្ចូល Google Sheets Web App API URL ក្នុង Setting ជាមុនសិន!");
+            if (!currentBranch.apiUrl) return alert("https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec");
             
             let rate = currentBranch.exchangeRate || 4000;
             let payload = currentBranch.rooms.map(r => {
@@ -1503,7 +1503,7 @@
         // 🔄 Load Data from Google Sheets (GET)
         async function loadFromCloudSheet() {
             let currentBranch = getCurrentBranch();
-            if (!currentBranch.apiUrl) return alert("សូមបញ្ចូល Google Sheets Web App API URL ក្នុង Setting ជាមុនសិន!");
+            if (!currentBranch.apiUrl) return alert("https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec");
 
             if (!confirm("តើបងចង់ទាញយកទិន្នន័យចុងក្រោយពី Cloud (Google Sheets) មកកាន់ឧបករណ៍នេះមែនទេ?")) return;
 
