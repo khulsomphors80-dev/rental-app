@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល</title>
+    <title>ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល Pro Ultra Max</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -34,16 +34,14 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
 
-    <!-- Login / Role Selection Overlay -->
+    <!-- Login / User Selection Overlay -->
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[110] flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
             <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl mx-auto font-bold">🔐</div>
             <h2 class="text-base font-bold text-slate-800">ចូលប្រើប្រាស់ប្រព័ន្ធ (Login)</h2>
-            <p class="text-xs text-slate-500">ជ្រើសរើសកម្រិតអ្នកប្រើប្រាស់</p>
+            <p class="text-xs text-slate-500">ជ្រើសរើសគណនីអ្នកប្រើប្រាស់</p>
             <div class="space-y-2 text-xs">
-                <select id="loginRole" class="w-full border rounded-xl p-2.5 outline-none font-bold bg-slate-50">
-                    <option value="admin">👑 Admin (ម្ចាស់ផ្ទះ - មើលចំណូល/ចំណាយ)</option>
-                    <option value="staff">🛠️ Staff (បុគ្គលិក - ចុះឈ្មោះ/កត់ទឹកភ្លើង)</option>
+                <select id="loginUserSelect" class="w-full border rounded-xl p-2.5 outline-none font-bold bg-slate-50 text-slate-800">
                 </select>
                 <input type="password" id="loginPin" maxlength="6" placeholder="បញ្ចូលលេខ PIN (Default: 1234)" class="w-full text-center text-xl font-inter font-bold tracking-widest border rounded-xl p-2.5 outline-none focus:border-indigo-500">
             </div>
@@ -58,7 +56,7 @@
                 <div class="p-2.5 bg-white/10 backdrop-blur-md rounded-xl text-2xl">🏠</div>
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល Pro Ultra Max</h1>
-                    <p class="text-xs text-indigo-100 opacity-90" id="userRoleDisplay">Role: Admin</p>
+                    <p class="text-xs text-indigo-100 opacity-90" id="userRoleDisplay">User: Admin</p>
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
@@ -103,7 +101,7 @@
             <button onclick="switchTab('rooms')" id="tab-rooms" class="px-4 py-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-md transition whitespace-nowrap">🏢 បន្ទប់ & វិក្កយបត្រ</button>
             <button onclick="switchTab('expenses')" id="tab-expenses" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">🛠️ កត់ត្រាចំណាយ (Expenses)</button>
             <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">📈 ផ្ទាំង Dashboard & ក្រាហ្វិក</button>
-            <button onclick="switchTab('settings')" id="tab-settings" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">⚙️ កំណត់តម្លៃ & Backup</button>
+            <button onclick="switchTab('settings')" id="tab-settings" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">⚙️ កំណត់តម្លៃ, User & Backup</button>
         </div>
 
         <!-- TAB 1: Rooms & Calculation -->
@@ -211,19 +209,17 @@
             </div>
         </div>
 
-        <!-- TAB 4: Branch Settings & Backup -->
+        <!-- TAB 4: Branch Settings & User Management & Backup -->
         <div id="section-settings" class="space-y-6 hidden no-print">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+                
+                <!-- Branch Settings -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
-                    <h2 class="text-sm font-bold mb-4 text-slate-800 border-b pb-2">⚙️ កំណត់តម្លៃសាខា & PIN សុវត្ថិភាព</h2>
+                    <h2 class="text-sm font-bold mb-4 text-slate-800 border-b pb-2">⚙️ កំណត់តម្លៃសាខា</h2>
                     <div class="space-y-3 text-xs">
                         <div>
-                            <label class="block font-semibold mb-1 text-slate-700">លេខកូដ PIN សុវត្ថិភាព (Lock PIN):</label>
-                            <input type="text" id="settingSecurityPin" maxlength="6" value="1234" class="w-full border rounded-xl p-2.5 outline-none font-inter font-bold">
-                        </div>
-                        <div>
                             <label class="block font-semibold mb-1 text-slate-700">ឈ្មោះសាខា:</label>
-                            <input type="text" id="settingBranchName" class="w-full border rounded-xl p-2.5 outline-none">
+                            <input type="text" id="settingBranchName" class="w-full border rounded-xl p-2.5 outline-none font-bold">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -250,41 +246,64 @@
                             <input type="text" id="settingApiUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border rounded-xl p-2.5 outline-none font-inter text-xs">
                         </div>
                         <div>
-                            <label class="block font-semibold mb-1 text-slate-700">URL រូបភាព QR Code របស់អ្នក (KHQR Image):</label>
+                            <label class="block font-semibold mb-1 text-slate-700">URL រូបភាព QR Code (KHQR Image):</label>
                             <input type="text" id="settingOwnerName" placeholder="https://i.imgur.com/9gHl6j2.jpeg" class="w-full border rounded-xl p-2.5 outline-none">
                         </div>
                         <div class="pt-2">
-                            <button onclick="saveBranchSettings()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-xl font-bold transition">រក្សាទុកការកំណត់</button>
+                            <button onclick="saveBranchSettings()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-xl font-bold transition">រក្សាទុកការកំណត់សាខា</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between space-y-6">
-                    <div>
-                        <h2 class="text-sm font-bold mb-4 text-slate-800 border-b pb-2">💾 Backup & Restore ទិន្នន័យ</h2>
-                        <p class="text-xs text-slate-500 mb-4">Export/Import ទិន្នន័យទាំងអស់ជា File JSON ទុកការពារបាត់បង់។</p>
-                        <div class="space-y-3">
-                            <button onclick="exportDataJSON()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl font-bold text-xs shadow-sm transition flex items-center justify-center gap-2">
-                                📥 Export ទិន្នន័យ (Backup JSON)
-                            </button>
-                            <div class="border-t pt-3">
-                                <label class="block text-xs font-semibold mb-2 text-slate-700">Upload File JSON ដើម្បី Restore:</label>
-                                <input type="file" id="importJsonFile" accept=".json" onchange="importDataJSON(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                            </div>
+                <!-- User Management Section -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <h2 class="text-sm font-bold text-slate-800">👥 គ្រប់គ្រងគណនីអ្នកប្រើប្រាស់ (User & Branch Access)</h2>
+                        <button onclick="openAddUserModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold">+ បន្ថែម User</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 border-b font-bold text-slate-600">
+                                    <th class="p-2">ឈ្មោះ User</th>
+                                    <th class="p-2">Role</th>
+                                    <th class="p-2">សាខាអនុញ្ញាត</th>
+                                    <th class="p-2 text-center">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Backup & Delete History -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto pt-4">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                    <h2 class="text-sm font-bold mb-3 text-slate-800 border-b pb-2">💾 Backup & Restore ទិន្នន័យ</h2>
+                    <p class="text-xs text-slate-500 mb-4">Export/Import ទិន្នន័យទាំងអស់ជា File JSON ទុកការពារបាត់បង់។</p>
+                    <div class="space-y-3">
+                        <button onclick="exportDataJSON()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl font-bold text-xs shadow-sm transition flex items-center justify-center gap-2">
+                            📥 Export ទិន្នន័យ (Backup JSON)
+                        </button>
+                        <div class="border-t pt-3">
+                            <label class="block text-xs font-semibold mb-2 text-slate-700">Upload File JSON ដើម្បី Restore:</label>
+                            <input type="file" id="importJsonFile" accept=".json" onchange="importDataJSON(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
                     </div>
+                </div>
 
-                    <!-- Delete History Month Section -->
-                    <div class="border-t pt-4 bg-rose-50 p-4 rounded-2xl border border-rose-200">
-                        <h3 class="text-xs font-bold text-rose-700 mb-2">🗑️ លុបប្រវត្តិខែចាស់ៗ</h3>
-                        <p class="text-[11px] text-slate-600 mb-3">ជ្រើសរើសខែដែលបងចង់លុបចោលជាអចិន្ត្រៃយ៍ពីប្រព័ន្ធ៖</p>
-                        <div class="flex gap-2">
-                            <select id="deleteMonthSelect" class="w-full border border-rose-300 bg-white text-slate-800 rounded-xl px-3 py-2 text-xs font-inter font-bold outline-none">
-                            </select>
-                            <button onclick="deleteSelectedHistoryMonth()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
-                                លុបខែនេះ
-                            </button>
-                        </div>
+                <div class="bg-rose-50 p-6 rounded-2xl border border-rose-200">
+                    <h3 class="text-xs font-bold text-rose-700 mb-2">🗑️ លុបប្រវត្តិខែចាស់ៗ</h3>
+                    <p class="text-[11px] text-slate-600 mb-3">ជ្រើសរើសខែដែលបងចង់លុបចោលជាអចិន្ត្រៃយ៍ពីប្រព័ន្ធ៖</p>
+                    <div class="flex gap-2">
+                        <select id="deleteMonthSelect" class="w-full border border-rose-300 bg-white text-slate-800 rounded-xl px-3 py-2 text-xs font-inter font-bold outline-none">
+                        </select>
+                        <button onclick="deleteSelectedHistoryMonth()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
+                            លុបខែនេះ
+                        </button>
                     </div>
                 </div>
             </div>
@@ -324,6 +343,40 @@
     </div>
 
     <!-- Modals -->
+    <!-- Add User Modal -->
+    <div id="userModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-3 text-xs">
+            <h3 id="userModalTitle" class="text-sm font-bold text-indigo-700">បន្ថែម User ថ្មី</h3>
+            <form onsubmit="saveUserData(event)" class="space-y-3">
+                <input type="hidden" id="editingUserId">
+                <div>
+                    <label class="block font-semibold mb-1">ឈ្មោះ User (Username):</label>
+                    <input type="text" id="modalUsername" required class="w-full border rounded-xl p-2 outline-none font-bold">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">លេខ PIN ចូលប្រព័ន្ធ (4-6 ខ្ទង់):</label>
+                    <input type="password" id="modalUserPin" maxlength="6" required class="w-full border rounded-xl p-2 font-inter font-bold tracking-widest outline-none text-center">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">កម្រិតសិទ្ធិ (Role):</label>
+                    <select id="modalUserRole" class="w-full border rounded-xl p-2 outline-none bg-white font-bold">
+                        <option value="admin">👑 Admin (ម្ចាស់ផ្ទះ - គ្រប់គ្រងទាំងអស់)</option>
+                        <option value="staff">🛠️ Staff (បុគ្គលិក - កត់ទឹកភ្លើង/ចុះឈ្មោះ)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">កំណត់សាខាដែលអនុញ្ញាតឱ្យប្រើប្រាស់:</label>
+                    <div id="branchAccessCheckboxes" class="space-y-1 bg-slate-50 p-2.5 rounded-xl border max-h-32 overflow-y-auto">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('userModal')" class="px-4 py-2 bg-slate-100 rounded-xl">បោះបង់</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-sm">រក្សាទុក User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="cashModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
             <h3 class="text-sm font-bold text-indigo-700">💵 គណនាលុយអាប់ & ស្កេន Slip ធនាគារ</h3>
@@ -566,12 +619,16 @@
         </div>
     </div>
 
+    <!-- Detailed Monthly Summary Modal with Table -->
     <div id="summaryModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
-            <h3 class="text-sm font-bold mb-4 text-purple-700">📊 សង្ខេបការបិទបញ្ជីប្រចាំខែ</h3>
-            <div id="summaryContent" class="space-y-4 text-xs mb-6"></div>
-            <div class="flex justify-end gap-2 no-print">
-                <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold">🖨️ បោះពុម្ព</button>
+        <div class="bg-white rounded-2xl max-w-5xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-base font-bold text-indigo-700">📊 របាយការណ៍សង្ខេបបិទបញ្ជីប្រចាំខែ (<span id="summaryActiveMonthDisplay" class="font-inter"></span>)</h3>
+                <button onclick="closeModal('summaryModal')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+            </div>
+            <div id="summaryContent" class="space-y-6 text-xs"></div>
+            <div class="flex justify-end gap-2 no-print pt-4 border-t mt-4">
+                <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md">🖨️ បោះពុម្ពរបាយការណ៍</button>
                 <button type="button" onclick="closeModal('summaryModal')" class="px-4 py-2 bg-slate-200 rounded-xl text-xs font-semibold">បិទ</button>
             </div>
         </div>
@@ -589,17 +646,29 @@
                 db = {
                     activeBranchIndex: parsed.activeBranchIndex || 0,
                     activeMonth: "10/2026",
-                    securityPin: parsed.securityPin || "1234",
+                    users: [
+                        { id: 1, username: "Admin (ម្ចាស់ផ្ទះ)", pin: "1234", role: "admin", branches: ["all"] },
+                        { id: 2, username: "Staff (បុគ្គលិក)", pin: "1234", role: "staff", branches: [0] }
+                    ],
                     history: { "10/2026": parsed.branches }
                 };
             } else {
                 db = parsed;
+                if (!db.users) {
+                    db.users = [
+                        { id: 1, username: "Admin (ម្ចាស់ផ្ទះ)", pin: "1234", role: "admin", branches: ["all"] },
+                        { id: 2, username: "Staff (បុគ្គលិក)", pin: "1234", role: "staff", branches: [0] }
+                    ];
+                }
             }
         } else {
             db = {
                 activeBranchIndex: 0,
                 activeMonth: "10/2026",
-                securityPin: "1234",
+                users: [
+                    { id: 1, username: "Admin (ម្ចាស់ផ្ទះ)", pin: "1234", role: "admin", branches: ["all"] },
+                    { id: 2, username: "Staff (បុគ្គលិក)", pin: "1234", role: "staff", branches: [0] }
+                ],
                 history: {
                     "10/2026": [
                         {
@@ -619,160 +688,32 @@
             };
         }
 
-        let currentUserRole = "admin";
+        let currentLoggedInUser = db.users[0];
         let currentActiveRoomIdForCash = null;
         let currentGrandTotalForCash = 0;
         let currentCheckOutRoomId = null;
         let breakdownChartObj = null;
         let statusChartObj = null;
 
-        // 📷 Smart Meter Photo OCR Reader Function
-        function scanMeterPhotoOCR(event, targetInputId) {
-            let file = event.target.files[0];
-            if (!file) return;
-
-            let statusText = document.getElementById('meterScanStatusText');
-            statusText.innerText = "កំពុងអានលេខពីថតរូបកុងទ័រ... ⏳";
-            statusText.classList.remove('hidden');
-
-            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
-                statusText.classList.add('hidden');
-                console.log("Meter OCR Text:", text);
-
-                let numbers = text.match(/\d+/g);
-                if (numbers && numbers.length > 0) {
-                    let detectedNum = Math.max(...numbers.map(n => parseInt(n)));
-                    document.getElementById(targetInputId).value = detectedNum;
-                    alert(`✨ ស្កេនរូបកុងទ័រជោគជ័យ! អានឃើញលេខអានថ្មី៖ ${detectedNum}`);
-                } else {
-                    alert("មិនអាចអានលេខអានច្បាស់ពីថតរូបបានទេ។ សូមបំពេញដោយដៃ!");
-                }
-            }).catch(err => {
-                statusText.classList.add('hidden');
-                alert("មានបញ្ហាក្នុងការស្កេនរូបថតកុងទ័រ!");
-            });
-        }
-
-        // 🔔 Web Push Notification System
-        function requestNotificationPermission() {
-            if ("Notification" in window) {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        alert("បានបើកការជូនដំណឹង Notification ជោគជ័យ! 🎉");
-                        sendWebNotification("ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល", "ការជូនដំណឹងត្រូវបានបើកដំណើរការ!");
-                    }
-                });
-            } else {
-                alert("Browser របស់អ្នកមិនគាំទ្រប្រព័ន្ធ Notification ទេ!");
-            }
-        }
-
-        function sendWebNotification(title, body) {
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification(title, { body: body, icon: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=KHQR" });
-            }
-        }
-
-        // 🤖 In-App AI Chatbot Assistant Logic
-        function toggleAiWidget() {
-            document.getElementById('aiChatModal').classList.toggle('hidden');
-        }
-
-        function sendAiMessage() {
-            let input = document.getElementById('aiInputText');
-            let query = input.value.trim();
-            if (!query) return;
-
-            let body = document.getElementById('aiChatBody');
-            body.innerHTML += `<div class="bg-indigo-600 text-white p-2 rounded-2xl max-w-[85%] ml-auto font-medium">${query}</div>`;
-            input.value = '';
-
-            let response = processAiQuery(query);
-            setTimeout(() => {
-                body.innerHTML += `<div class="bg-slate-200 text-slate-800 p-2.5 rounded-2xl max-w-[85%] font-medium">${response}</div>`;
-                body.scrollTop = body.scrollHeight;
-            }, 300);
-        }
-
-        function processAiQuery(q) {
-            q = q.toLowerCase();
-            let b = getCurrentBranch();
-            let rate = b.exchangeRate || 4000;
-
-            if (q.includes("មិនទាន់បង់") || q.includes("ខ្វះ")) {
-                let unpaid = b.rooms.filter(r => !r.isPaid);
-                if (unpaid.length === 0) return "គ្រប់បន្ទប់ទាំងអស់បានបង់ប្រាក់រួចរាល់អស់ហើយ! 🎉";
-                let list = unpaid.map(r => `បន្ទប់ ${r.roomNum} (${r.tenant || 'គ្មានឈ្មោះ'})`).join(", ");
-                return `បន្ទប់ដែលមិនទាន់បង់ប្រាក់មានចំនួន ${unpaid.length} បន្ទប់៖ ${list}`;
-            }
-
-            if (q.includes("ចំណេញ") || q.includes("ប្រាក់ចំណូល")) {
-                let grandTotalAll = 0;
-                b.rooms.forEach(r => {
-                    let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
-                    let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
-                    grandTotalAll += (r.price * rate) + (elecUsed * b.elecPrice) + (waterUsed * b.waterPrice) + b.trashPrice + (r.extraPrice || 0);
-                });
-                let totalExp = (b.expenses || []).reduce((sum, e) => sum + e.amount, 0);
-                let profit = grandTotalAll - totalExp;
-                return `ប្រាក់ចំណូលសរុបខែនេះ៖ <b>${grandTotalAll.toLocaleString()} ៛</b><br>ចំណាយសរុប៖ <b>${totalExp.toLocaleString()} ៛</b><br>👉 ប្រាក់ចំណេញសុទ្ធ៖ <b style="color:green;">${profit.toLocaleString()} ៛</b>`;
-            }
-
-            if (q.includes("ផុតកុងត្រា") || q.includes("កុងត្រា")) {
-                let today = new Date();
-                let expRooms = b.rooms.filter(r => {
-                    if (!r.contractEnd) return false;
-                    let diff = Math.ceil((new Date(r.contractEnd) - today) / (1000*60*60*24));
-                    return diff <= 15;
-                });
-                if (expRooms.length === 0) return "មិនមានបន្ទប់ណាជិតផុតកុងត្រាក្នុងរយះពេល ១៥ ថ្ងៃនេះទេ! 👍";
-                let list = expRooms.map(r => `បន្ទប់ ${r.roomNum} (ផុត៖ ${r.contractEnd})`).join(", ");
-                return `បន្ទប់ជិតផុតកុងត្រា៖ ${list}`;
-            }
-
-            return "ខ្ញុំអាចជួយប្រាប់ពី៖ បន្ទប់មិនទាន់បង់លុយ, ប្រាក់ចំណេញប្រចាំខែ, ឬបន្ទប់ជិតផុតកុងត្រា។ សូមព្យាយាមសួរសំណួរទាំងនេះ!";
-        }
-
-        // 🧾 OCR Smart Bank Slip Scanner Logic
-        function scanBankSlipOCR(event) {
-            let file = event.target.files[0];
-            if (!file) return;
-
-            let statusText = document.getElementById('ocrStatusText');
-            statusText.innerText = "កំពុងស្កេនរូបភាព Slip ធនាគារ... ⏳";
-            statusText.classList.remove('hidden');
-
-            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
-                statusText.classList.add('hidden');
-                console.log("OCR Extracted Text:", text);
-
-                let numbers = text.match(/[\d,.]+/g);
-                if (numbers) {
-                    let cleanNumbers = numbers.map(n => parseFloat(n.replace(/,/g, ''))).filter(n => n > 1000);
-                    if (cleanNumbers.length > 0) {
-                        let detectedAmount = Math.max(...cleanNumbers);
-                        document.getElementById('cashGivenInput').value = detectedAmount;
-                        calculateChange();
-                        alert(`✨ ស្កេន Slip ជោគជ័យ! រកឃើញចំនួនទឹកប្រាក់ទូទាត់៖ ${detectedAmount.toLocaleString()} ៛`);
-                    } else {
-                        alert("មិនអាចអានចំនួនទឹកប្រាក់ពី Slip ធនាគារបានទេ។ សូមវាយបញ្ចូលដោយដៃ!");
-                    }
-                } else {
-                    alert("មិនអាចស្កេនអត្ថបទលើ Slip បានទេ។");
-                }
-            }).catch(err => {
-                statusText.classList.add('hidden');
-                alert("មានបញ្ហាក្នុងការស្កេនរូបភាព Slip!");
+        // Populate User Select Box in Login Overlay
+        function renderLoginUserOptions() {
+            let select = document.getElementById('loginUserSelect');
+            select.innerHTML = '';
+            db.users.forEach(u => {
+                let opt = document.createElement('option');
+                opt.value = u.id;
+                opt.text = `${u.username} (${u.role === 'admin' ? '👑 Admin' : '🛠️ Staff'})`;
+                select.appendChild(opt);
             });
         }
 
         function handleLogin() {
-            let role = document.getElementById('loginRole').value;
+            let userId = parseInt(document.getElementById('loginUserSelect').value);
             let pin = document.getElementById('loginPin').value;
-            let correctPin = db.securityPin || "1234";
+            let user = db.users.find(u => u.id === userId);
 
-            if (pin === correctPin) {
-                currentUserRole = role;
+            if (user && pin === user.pin) {
+                currentLoggedInUser = user;
                 document.getElementById('loginOverlay').classList.add('hidden');
                 applyUserPermissions();
                 renderApp();
@@ -783,14 +724,15 @@
 
         function lockSystemManual() {
             document.getElementById('loginPin').value = "";
+            renderLoginUserOptions();
             document.getElementById('loginOverlay').classList.remove('hidden');
         }
 
         function applyUserPermissions() {
-            let roleText = currentUserRole === 'admin' ? "Role: Admin (ម្ចាស់ផ្ទះ)" : "Role: Staff (បុគ្គលិក)";
+            let roleText = `User: ${currentLoggedInUser.username} (${currentLoggedInUser.role === 'admin' ? '👑 Admin' : '🛠️ Staff'})`;
             document.getElementById('userRoleDisplay').innerText = roleText;
 
-            if (currentUserRole === 'staff') {
+            if (currentLoggedInUser.role === 'staff') {
                 document.getElementById('btnAdminSummary').style.display = 'none';
                 document.getElementById('tab-dashboard').style.display = 'none';
                 document.getElementById('tab-settings').style.display = 'none';
@@ -800,8 +742,6 @@
                 document.getElementById('tab-settings').style.display = 'inline-block';
             }
         }
-
-        function unlockSystem() { handleLogin(); }
 
         function saveLocal() {
             localStorage.setItem('rental_sys_db', JSON.stringify(db));
@@ -818,8 +758,17 @@
                     db.history[db.activeMonth] = [{ name: "សាខាទី១ (តាកែវ)", elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec", ownerName: "", expenses: [], rooms: [] }];
                 }
             }
-            if(!db.history[db.activeMonth][db.activeBranchIndex]) db.activeBranchIndex = 0;
-            return db.history[db.activeMonth][db.activeBranchIndex];
+
+            let availableBranches = db.history[db.activeMonth] || [];
+            if(currentLoggedInUser.role !== 'admin' && !currentLoggedInUser.branches.includes('all')) {
+                let allowedIndices = currentLoggedInUser.branches;
+                if(!allowedIndices.includes(db.activeBranchIndex)) {
+                    db.activeBranchIndex = allowedIndices.length > 0 ? allowedIndices[0] : 0;
+                }
+            }
+
+            if(!availableBranches[db.activeBranchIndex]) db.activeBranchIndex = 0;
+            return availableBranches[db.activeBranchIndex];
         }
 
         function switchTab(tab) {
@@ -863,16 +812,19 @@
 
         function renderApp() {
             renderMonthPicker();
+            renderLoginUserOptions();
             let branchSelect = document.getElementById('branchSelector');
             branchSelect.innerHTML = '';
             
             let currentMonthBranches = db.history[db.activeMonth] || [];
             currentMonthBranches.forEach((b, idx) => {
-                let opt = document.createElement('option');
-                opt.value = idx;
-                opt.text = b.name;
-                if(idx === db.activeBranchIndex) opt.selected = true;
-                branchSelect.appendChild(opt);
+                if (currentLoggedInUser.role === 'admin' || currentLoggedInUser.branches.includes('all') || currentLoggedInUser.branches.includes(idx)) {
+                    let opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.text = b.name;
+                    if(idx === db.activeBranchIndex) opt.selected = true;
+                    branchSelect.appendChild(opt);
+                }
             });
 
             let currentBranch = getCurrentBranch();
@@ -887,7 +839,6 @@
             let rate = currentBranch.exchangeRate || 4000;
             let searchText = (document.getElementById('searchRoom')?.value || '').toLowerCase();
             let filterStatus = document.getElementById('filterStatus')?.value || 'all';
-
             let today = new Date();
 
             currentBranch.rooms.forEach(r => {
@@ -973,6 +924,383 @@
                         </td>
                     </tr>
                 `;
+            });
+        }
+
+        // 📊 Open Detailed Summary Modal Table Feature
+        function openMonthlySummary() {
+            document.getElementById('summaryActiveMonthDisplay').innerText = db.activeMonth;
+            let container = document.getElementById('summaryContent');
+            container.innerHTML = '';
+
+            let grandTotalAllBranches = 0;
+            let grandExpenseAllBranches = 0;
+            let currentMonthBranches = db.history[db.activeMonth] || [];
+
+            currentMonthBranches.forEach((branch, bIdx) => {
+                let rate = branch.exchangeRate || 4000;
+                let totalRoom = 0, totalElecKw = 0, totalElecRiel = 0, totalWaterM3 = 0, totalWaterRiel = 0, totalTrash = 0, totalExtra = 0, branchIncomeTotal = 0;
+
+                let tableRows = '';
+                branch.rooms.forEach(r => {
+                    let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+                    let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+                    let roomRiel = r.price * rate;
+                    let elecRiel = elecUsed * branch.elecPrice;
+                    let waterRiel = waterUsed * branch.waterPrice;
+                    let trashRiel = branch.trashPrice;
+                    let extraRiel = r.extraPrice || 0;
+                    let rowTotal = roomRiel + elecRiel + waterRiel + trashRiel + extraRiel;
+
+                    totalRoom += roomRiel;
+                    totalElecKw += elecUsed;
+                    totalElecRiel += elecRiel;
+                    totalWaterM3 += waterUsed;
+                    totalWaterRiel += waterRiel;
+                    totalTrash += trashRiel;
+                    totalExtra += extraRiel;
+                    branchIncomeTotal += rowTotal;
+
+                    tableRows += `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50">
+                            <td class="p-2 font-bold font-inter text-center">${r.roomNum}</td>
+                            <td class="p-2 font-medium">${r.tenant || '-'}</td>
+                            <td class="p-2 font-inter text-right">$${r.price} (${roomRiel.toLocaleString()} ៛)</td>
+                            <td class="p-2 font-inter text-right">${elecUsed} k (${elecRiel.toLocaleString()} ៛)</td>
+                            <td class="p-2 font-inter text-right">${waterUsed} m³ (${waterRiel.toLocaleString()} ៛)</td>
+                            <td class="p-2 font-inter text-right">${trashRiel.toLocaleString()} ៛</td>
+                            <td class="p-2 font-inter text-right">${extraRiel.toLocaleString()} ៛</td>
+                            <td class="p-2 font-inter font-bold text-indigo-600 text-right">${rowTotal.toLocaleString()} ៛</td>
+                            <td class="p-2 text-center font-bold">${r.isPaid ? '<span class="text-emerald-600">បង់រួច</span>' : '<span class="text-rose-500">មិនទាន់បង់</span>'}</td>
+                        </tr>
+                    `;
+                });
+
+                let branchExpenses = (branch.expenses || []).reduce((sum, e) => sum + e.amount, 0);
+                let branchNetProfit = branchIncomeTotal - branchExpenses;
+
+                grandTotalAllBranches += branchIncomeTotal;
+                grandExpenseAllBranches += branchExpenses;
+
+                container.innerHTML += `
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2 flex-wrap gap-2">
+                            <div class="font-bold text-sm text-indigo-800">🏠 ${branch.name}</div>
+                            <div class="flex gap-4 text-xs">
+                                <div>ចំណូលសរុប៖ <b class="text-emerald-600 font-inter">${branchIncomeTotal.toLocaleString()} ៛</b></div>
+                                <div>ចំណាយសរុប៖ <b class="text-rose-600 font-inter">${branchExpenses.toLocaleString()} ៛</b></div>
+                                <div>ប្រាក់ចំណេញ៖ <b class="text-purple-600 font-inter">${branchNetProfit.toLocaleString()} ៛</b></div>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-[11px]">
+                                <thead>
+                                    <tr class="bg-slate-100 font-bold text-slate-700 border-b">
+                                        <th class="p-2 text-center">បន្ទប់</th>
+                                        <th class="p-2">អ្នកជួល</th>
+                                        <th class="p-2 text-right">ថ្លៃបន្ទប់</th>
+                                        <th class="p-2 text-right">ភ្លើង (គីឡូ)</th>
+                                        <th class="p-2 text-right">ទឹក (ម៉ែត្រគូប)</th>
+                                        <th class="p-2 text-right">ថ្លៃសំរាម</th>
+                                        <th class="p-2 text-right">សេវាផ្សេងៗ</th>
+                                        <th class="p-2 text-right">សរុបត្រូវបង់</th>
+                                        <th class="p-2 text-center">ស្ថានភាព</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-indigo-50/70 font-bold text-slate-800 border-t border-indigo-200">
+                                        <td colspan="2" class="p-2 text-center">សរុបសាខា (${branch.name})</td>
+                                        <td class="p-2 text-right font-inter">${totalRoom.toLocaleString()} ៛</td>
+                                        <td class="p-2 text-right font-inter">${totalElecKw} k (${totalElecRiel.toLocaleString()} ៛)</td>
+                                        <td class="p-2 text-right font-inter">${totalWaterM3} m³ (${totalWaterRiel.toLocaleString()} ៛)</td>
+                                        <td class="p-2 text-right font-inter">${totalTrash.toLocaleString()} ៛</td>
+                                        <td class="p-2 text-right font-inter">${totalExtra.toLocaleString()} ៛</td>
+                                        <td class="p-2 text-right font-inter text-indigo-700 text-xs">${branchIncomeTotal.toLocaleString()} ៛</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+
+            let grandNetProfit = grandTotalAllBranches - grandExpenseAllBranches;
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-center">
+                        <div class="text-emerald-800 font-medium text-xs">💰 ប្រាក់ចំណូលសរុបគ្រប់សាខា</div>
+                        <div class="text-lg font-bold text-emerald-600 font-inter mt-0.5">${grandTotalAllBranches.toLocaleString()} ៛</div>
+                    </div>
+                    <div class="bg-rose-50 border border-rose-200 p-3 rounded-xl text-center">
+                        <div class="text-rose-800 font-medium text-xs">💸 ការចំណាយសរុបគ្រប់សាខា</div>
+                        <div class="text-lg font-bold text-rose-600 font-inter mt-0.5">${grandExpenseAllBranches.toLocaleString()} ៛</div>
+                    </div>
+                    <div class="bg-purple-50 border border-purple-200 p-3 rounded-xl text-center">
+                        <div class="text-purple-800 font-medium text-xs">✨ ប្រាក់ចំណេញសុទ្ធសរុប</div>
+                        <div class="text-lg font-bold text-purple-700 font-inter mt-0.5">${grandNetProfit.toLocaleString()} ៛</div>
+                    </div>
+                </div>
+            ` + container.innerHTML;
+
+            document.getElementById('summaryModal').classList.remove('hidden');
+        }
+
+        // 📥 PDF Download Function Fix (html2canvas & jsPDF Integration)
+        async function downloadPDF() {
+            let container = document.getElementById('printable-area');
+            if (!container || container.children.length === 0) return alert("មិនមានវិក្កយបត្រសម្រាប់ទាញយកទេ!");
+
+            alert("កំពុងបង្កើត File PDF សម្រាប់ទាញយក... សូមរង់ចាំបន្តិច! ⏳");
+
+            try {
+                const { jsPDF } = window.jspdf;
+                let pdf = new jsPDF('p', 'mm', 'a4');
+                let pdfWidth = pdf.internal.pageSize.getWidth();
+                let pdfHeight = pdf.internal.pageSize.getHeight();
+
+                let cards = document.querySelectorAll('.invoice-card-print');
+                for (let i = 0; i < cards.length; i++) {
+                    if (i > 0 && i % 3 === 0) pdf.addPage();
+
+                    let card = cards[i];
+                    let canvas = await html2canvas(card, { scale: 2, useCORS: true, allowTaint: true });
+                    let imgData = canvas.toDataURL('image/png');
+
+                    let imgProps = pdf.getImageProperties(imgData);
+                    let width = pdfWidth - 20;
+                    let height = (imgProps.height * width) / imgProps.width;
+
+                    let yPos = 10 + ((i % 3) * (height + 5));
+                    pdf.addImage(imgData, 'PNG', 10, yPos, width, height);
+                }
+
+                pdf.save(`Invoices_Report_${db.activeMonth.replace('/', '-')}.pdf`);
+                alert("ទាញយក PDF ជោគជ័យ! 🎉");
+            } catch (err) {
+                console.error(err);
+                alert("មានបញ្ហាក្នុងការបង្កើត File PDF!");
+            }
+        }
+
+        // 👥 User Management Functions
+        function renderUsersList() {
+            let tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            db.users.forEach((u, idx) => {
+                let branchesText = u.branches.includes('all') ? 'គ្រប់សាខាទាំងអស់' : u.branches.map(bIdx => (db.history[db.activeMonth][bIdx] || {}).name || `សាខា #${bIdx+1}`).join(", ");
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="p-2 font-bold text-slate-800">${u.username}</td>
+                        <td class="p-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role === 'admin' ? '👑 Admin' : '🛠️ Staff'}</span></td>
+                        <td class="p-2 text-slate-600">${branchesText}</td>
+                        <td class="p-2 text-center">
+                            <button onclick="openEditUserModal(${u.id})" class="text-indigo-600 hover:underline font-semibold mr-1">កែ</button>
+                            ${u.id !== 1 ? `<button onclick="deleteUser(${u.id})" class="text-rose-500 hover:underline font-semibold">លុប</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openAddUserModal() {
+            document.getElementById('userModalTitle').innerText = "បន្ថែម User ថ្មី";
+            document.getElementById('editingUserId').value = "";
+            document.getElementById('modalUsername').value = "";
+            document.getElementById('modalUserPin').value = "";
+            document.getElementById('modalUserRole').value = "staff";
+            renderBranchCheckboxes([]);
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        function openEditUserModal(id) {
+            let u = db.users.find(x => x.id === id);
+            if (!u) return;
+            document.getElementById('userModalTitle').innerText = "កែសម្រួល User";
+            document.getElementById('editingUserId').value = u.id;
+            document.getElementById('modalUsername').value = u.username;
+            document.getElementById('modalUserPin').value = u.pin;
+            document.getElementById('modalUserRole').value = u.role;
+            renderBranchCheckboxes(u.branches);
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        function renderBranchCheckboxes(selectedBranches) {
+            let container = document.getElementById('branchAccessCheckboxes');
+            container.innerHTML = '';
+
+            let isAll = selectedBranches.includes('all');
+            container.innerHTML += `
+                <label class="flex items-center gap-2 font-semibold text-slate-800">
+                    <input type="checkbox" value="all" ${isAll ? 'checked' : ''} onchange="toggleAllBranchCheckbox(this)">
+                    <span>គ្រប់សាខាទាំងអស់ (All Branches)</span>
+                </label>
+                <div class="border-t my-1"></div>
+            `;
+
+            (db.history[db.activeMonth] || []).forEach((b, idx) => {
+                let isChecked = isAll || selectedBranches.includes(idx);
+                container.innerHTML += `
+                    <label class="flex items-center gap-2 text-slate-700">
+                        <input type="checkbox" class="branch-single-cb" value="${idx}" ${isChecked ? 'checked' : ''}>
+                        <span>${b.name}</span>
+                    </label>
+                `;
+            });
+        }
+
+        function toggleAllBranchCheckbox(mainCb) {
+            let cbs = document.querySelectorAll('.branch-single-cb');
+            cbs.forEach(cb => cb.checked = mainCb.checked);
+        }
+
+        function saveUserData(e) {
+            e.preventDefault();
+            let id = document.getElementById('editingUserId').value;
+            let username = document.getElementById('modalUsername').value.trim();
+            let pin = document.getElementById('modalUserPin').value.trim();
+            let role = document.getElementById('modalUserRole').value;
+
+            let selectedBranches = [];
+            let allCb = document.querySelector('input[value="all"]');
+            if (allCb && allCb.checked) {
+                selectedBranches = ['all'];
+            } else {
+                let cbs = document.querySelectorAll('.branch-single-cb');
+                cbs.forEach(cb => { if (cb.checked) selectedBranches.push(parseInt(cb.value)); });
+            }
+
+            if (id) {
+                let u = db.users.find(x => x.id == id);
+                if (u) { u.username = username; u.pin = pin; u.role = role; u.branches = selectedBranches; }
+            } else {
+                let newId = Date.now();
+                db.users.push({ id: newId, username, pin, role, branches: selectedBranches });
+            }
+
+            saveLocal();
+            closeModal('userModal');
+            renderUsersList();
+            alert("បានរក្សាទុកព័ត៌មាន User ជោគជ័យ! 🎉");
+        }
+
+        function deleteUser(id) {
+            if (confirm("លុប User នេះ?")) {
+                db.users = db.users.filter(u => u.id !== id);
+                saveLocal();
+                renderUsersList();
+            }
+        }
+
+        // Camera AI Meter Photo Scan Section
+        function scanMeterPhotoOCR(event, targetInputId) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let statusText = document.getElementById('meterScanStatusText');
+            statusText.innerText = "កំពុងអានលេខពីថតរូបកុងទ័រ... ⏳";
+            statusText.classList.remove('hidden');
+
+            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+                statusText.classList.add('hidden');
+                let numbers = text.match(/\d+/g);
+                if (numbers && numbers.length > 0) {
+                    let detectedNum = Math.max(...numbers.map(n => parseInt(n)));
+                    document.getElementById(targetInputId).value = detectedNum;
+                    alert(`✨ ស្កេនរូបកុងទ័រជោគជ័យ! អានឃើញលេខអានថ្មី៖ ${detectedNum}`);
+                } else {
+                    alert("មិនអាចអានលេខអានច្បាស់ពីថតរូបបានទេ។ សូមបំពេញដោយដៃ!");
+                }
+            }).catch(err => {
+                statusText.classList.add('hidden');
+                alert("មានបញ្ហាក្នុងការស្កេនរូបថតកុងទ័រ!");
+            });
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        alert("បានបើកការជូនដំណឹង Notification ជោគជ័យ! 🎉");
+                    }
+                });
+            }
+        }
+
+        function toggleAiWidget() { document.getElementById('aiChatModal').classList.toggle('hidden'); }
+
+        function sendAiMessage() {
+            let input = document.getElementById('aiInputText');
+            let query = input.value.trim();
+            if (!query) return;
+
+            let body = document.getElementById('aiChatBody');
+            body.innerHTML += `<div class="bg-indigo-600 text-white p-2 rounded-2xl max-w-[85%] ml-auto font-medium">${query}</div>`;
+            input.value = '';
+
+            let response = processAiQuery(query);
+            setTimeout(() => {
+                body.innerHTML += `<div class="bg-slate-200 text-slate-800 p-2.5 rounded-2xl max-w-[85%] font-medium">${response}</div>`;
+                body.scrollTop = body.scrollHeight;
+            }, 300);
+        }
+
+        function processAiQuery(q) {
+            q = q.toLowerCase();
+            let b = getCurrentBranch();
+            let rate = b.exchangeRate || 4000;
+
+            if (q.includes("មិនទាន់បង់") || q.includes("ខ្វះ")) {
+                let unpaid = b.rooms.filter(r => !r.isPaid);
+                if (unpaid.length === 0) return "គ្រប់បន្ទប់ទាំងអស់បានបង់ប្រាក់រួចរាល់អស់ហើយ! 🎉";
+                let list = unpaid.map(r => `បន្ទប់ ${r.roomNum} (${r.tenant || 'គ្មានឈ្មោះ'})`).join(", ");
+                return `បន្ទប់ដែលមិនទាន់បង់ប្រាក់មានចំនួន ${unpaid.length} បន្ទប់៖ ${list}`;
+            }
+
+            if (q.includes("ចំណេញ") || q.includes("ប្រាក់ចំណូល")) {
+                let grandTotalAll = 0;
+                b.rooms.forEach(r => {
+                    let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+                    let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+                    grandTotalAll += (r.price * rate) + (elecUsed * b.elecPrice) + (waterUsed * b.waterPrice) + b.trashPrice + (r.extraPrice || 0);
+                });
+                let totalExp = (b.expenses || []).reduce((sum, e) => sum + e.amount, 0);
+                let profit = grandTotalAll - totalExp;
+                return `ប្រាក់ចំណូលសរុបខែនេះ៖ <b>${grandTotalAll.toLocaleString()} ៛</b><br>ចំណាយសរុប៖ <b>${totalExp.toLocaleString()} ៛</b><br>👉 ប្រាក់ចំណេញសុទ្ធ៖ <b style="color:green;">${profit.toLocaleString()} ៛</b>`;
+            }
+
+            return "ខ្ញុំអាចជួយប្រាប់ពី៖ បន្ទប់មិនទាន់បង់លុយ, ប្រាក់ចំណេញប្រចាំខែ, ឬបន្ទប់ជិតផុតកុងត្រា។";
+        }
+
+        function scanBankSlipOCR(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let statusText = document.getElementById('ocrStatusText');
+            statusText.innerText = "កំពុងស្កេនរូបភាព Slip ធនាគារ... ⏳";
+            statusText.classList.remove('hidden');
+
+            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+                statusText.classList.add('hidden');
+                let numbers = text.match(/[\d,.]+/g);
+                if (numbers) {
+                    let cleanNumbers = numbers.map(n => parseFloat(n.replace(/,/g, ''))).filter(n => n > 1000);
+                    if (cleanNumbers.length > 0) {
+                        let detectedAmount = Math.max(...cleanNumbers);
+                        document.getElementById('cashGivenInput').value = detectedAmount;
+                        calculateChange();
+                        alert(`✨ ស្កេន Slip ជោគជ័យ! ចំនួនទឹកប្រាក់៖ ${detectedAmount.toLocaleString()} ៛`);
+                    } else { alert("មិនអាចអានចំនួនទឹកប្រាក់ពី Slip ធនាគារបានទេ។"); }
+                } else { alert("មិនអាចស្កេនអត្ថបទលើ Slip បានទេ។"); }
+            }).catch(err => {
+                statusText.classList.add('hidden');
+                alert("មានបញ្ហាក្នុងការស្កេនរូបភាព Slip!");
             });
         }
 
@@ -1443,25 +1771,6 @@
             } catch(e) { console.error(e); }
         }
 
-        function openMonthlySummary() {
-            let container = document.getElementById('summaryContent');
-            container.innerHTML = '';
-            let totalAllRiel = 0, summaryHtml = '';
-            (db.history[db.activeMonth] || []).forEach((branch) => {
-                let branchTotal = 0;
-                branch.rooms.forEach(r => {
-                    let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
-                    let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
-                    branchTotal += (r.price * (branch.exchangeRate || 4000)) + (elecUsed * branch.elecPrice) + (waterUsed * branch.waterPrice) + branch.trashPrice + (r.extraPrice || 0);
-                });
-                totalAllRiel += branchTotal;
-                summaryHtml += `<div class="bg-slate-50 border rounded-2xl p-4"><b>🏠 ${branch.name}</b>: ${branchTotal.toLocaleString()} ៛</div>`;
-            });
-            container.innerHTML = `<div class="bg-purple-600 text-white p-4 rounded-2xl mb-4 font-bold">💰 ប្រាក់សរុបទាំងអស់: ${totalAllRiel.toLocaleString()} ៛</div>` + summaryHtml;
-            document.getElementById('summaryModal').classList.remove('hidden');
-        }
-
-        // ☁️ Sync to Google Sheets (POST)
         async function syncToSheet() {
             let currentBranch = getCurrentBranch();
             let apiUrl = currentBranch.apiUrl || "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec";
@@ -1502,7 +1811,6 @@
             }
         }
 
-        // 🔄 Load Data from Google Sheets (GET)
         async function loadFromCloudSheet() {
             let currentBranch = getCurrentBranch();
             let apiUrl = currentBranch.apiUrl || "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec";
@@ -1545,11 +1853,6 @@
             }
         }
 
-        async function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            alert("កំពុងបង្កើត File PDF... សូមរង់ចាំបន្តិច!");
-        }
-
         function exportDataJSON() {
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
             let anchor = document.createElement('a');
@@ -1575,7 +1878,6 @@
 
         function loadSettingsForm() {
             let b = getCurrentBranch();
-            document.getElementById('settingSecurityPin').value = db.securityPin || "1234";
             document.getElementById('settingBranchName').value = b.name;
             document.getElementById('settingElecPrice').value = b.elecPrice;
             document.getElementById('settingWaterPrice').value = b.waterPrice;
@@ -1584,11 +1886,11 @@
             document.getElementById('settingApiUrl').value = b.apiUrl || 'https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec';
             document.getElementById('settingOwnerName').value = b.ownerName || '';
             renderDeleteMonthSelector();
+            renderUsersList();
         }
 
         function saveBranchSettings() {
             let b = getCurrentBranch();
-            db.securityPin = document.getElementById('settingSecurityPin').value.trim() || "1234";
             b.name = document.getElementById('settingBranchName').value;
             b.elecPrice = parseFloat(document.getElementById('settingElecPrice').value) || 0;
             b.waterPrice = parseFloat(document.getElementById('settingWaterPrice').value) || 0;
