@@ -609,8 +609,8 @@
                             trashPrice: 3000,
                             exchangeRate: 4000,
                             phone: "015 520 085",
-                            apiUrl: "",
-                            ownerName: "https://i.imgur.com/9gHl6j2.jpeg",
+                            apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec",
+                            ownerName: "",
                             expenses: [{ id: 1, date: "2026-10-01", desc: "ទិញអំពិលភ្លើង", cat: "ជួសជុល & ថែទាំ", amount: 25000 }],
                             rooms: [{ id: 1, roomNum: "01", tenant: "គុ រណី", phone: "012 333 222", telegram: "1082370017", idCard: "", deposit: 40, contractEnd: "2027-04-10", price: 40, extraName: "ថ្លៃផ្ញើកង់", extraPrice: 20000, dueDate: "ថ្ងៃទី ១០", elecOld: 50, elecNew: 90, waterOld: 2256, waterNew: 2260, isPaid: false }]
                         }
@@ -669,7 +669,7 @@
 
         function sendWebNotification(title, body) {
             if ("Notification" in window && Notification.permission === "granted") {
-                new Notification(title, { body: body, icon: "https://i.imgur.com/9gHl6j2.jpeg" });
+                new Notification(title, { body: body, icon: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=KHQR" });
             }
         }
 
@@ -815,7 +815,7 @@
                 if(months.length > 0) {
                     db.history[db.activeMonth] = JSON.parse(JSON.stringify(db.history[months[0]]));
                 } else {
-                    db.history[db.activeMonth] = [{ name: "សាខាទី១", elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, expenses: [], rooms: [] }];
+                    db.history[db.activeMonth] = [{ name: "សាខាទី១ (តាកែវ)", elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec", ownerName: "", expenses: [], rooms: [] }];
                 }
             }
             if(!db.history[db.activeMonth][db.activeBranchIndex]) db.activeBranchIndex = 0;
@@ -1332,7 +1332,6 @@
             let container = document.getElementById('invoiceCardsContainer');
             container.innerHTML = '';
             let rate = currentBranch.exchangeRate || 4000;
-            let qrUrl = currentBranch.ownerName || "https://i.imgur.com/9gHl6j2.jpeg";
 
             currentBranch.rooms.forEach((r, idx) => {
                 let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
@@ -1343,6 +1342,9 @@
                 let extra = r.extraPrice || 0;
                 let grandTotal = roomPriceRiel + elecTotal + waterTotal + currentBranch.trashPrice + extra;
                 let isPageBreak = ((idx + 1) % 3 === 0) ? 'page-break' : '';
+
+                let defaultQr = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=KHQR_PAYMENT_${grandTotal}_RIEL`;
+                let qrUrl = currentBranch.ownerName && currentBranch.ownerName.trim() !== "" ? currentBranch.ownerName : defaultQr;
 
                 container.innerHTML += `
                     <div id="invoice-card-${r.id}" class="invoice-card-print ${isPageBreak}" style="width: 100%; max-width: 680px; height: 88mm; background: #ffffff; border: 1.5px dashed #9ca3af; border-radius: 10px; padding: 10px 14px; margin: 0 auto 6mm auto; box-sizing: border-box; font-size: 11px; color: #111827; display: flex; flex-direction: column; justify-content: space-between;">
@@ -1375,7 +1377,7 @@
                                     <td style="width: 38%; vertical-align: top; text-align: center;">
                                         <div style="border: 1.2px solid #4338ca; border-radius: 12px; padding: 4px 6px; background: #ffffff; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center;">
                                             <div style="font-size: 10.5px; font-weight: 700; color: #111827; margin-bottom: 4px;">ស្កេនបង់ប្រាក់ (KHQR)</div>
-                                            <img src="${qrUrl}" crossorigin="anonymous" style="width: 130px; height: 160px; object-fit: contain; margin: 6px auto 0 auto; display: block;">
+                                            <img src="${qrUrl}" onerror="this.onerror=null; this.src='${defaultQr}';" crossorigin="anonymous" style="width: 130px; height: 160px; object-fit: contain; margin: 6px auto 0 auto; display: block;">
                                         </div>
                                     </td>
                                 </tr>
@@ -1462,7 +1464,7 @@
         // ☁️ Sync to Google Sheets (POST)
         async function syncToSheet() {
             let currentBranch = getCurrentBranch();
-            if (!currentBranch.apiUrl) return alert("https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec");
+            let apiUrl = currentBranch.apiUrl || "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec";
             
             let rate = currentBranch.exchangeRate || 4000;
             let payload = currentBranch.rooms.map(r => {
@@ -1487,7 +1489,7 @@
             });
 
             try {
-                await fetch(currentBranch.apiUrl, {
+                await fetch(apiUrl, {
                     method: "POST",
                     mode: "no-cors",
                     headers: { "Content-Type": "application/json" },
@@ -1503,18 +1505,37 @@
         // 🔄 Load Data from Google Sheets (GET)
         async function loadFromCloudSheet() {
             let currentBranch = getCurrentBranch();
-            if (!currentBranch.apiUrl) return alert("https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec");
+            let apiUrl = currentBranch.apiUrl || "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec";
 
             if (!confirm("តើបងចង់ទាញយកទិន្នន័យចុងក្រោយពី Cloud (Google Sheets) មកកាន់ឧបករណ៍នេះមែនទេ?")) return;
 
             try {
-                let res = await fetch(currentBranch.apiUrl);
+                let res = await fetch(apiUrl);
                 let cloudData = await res.json();
                 if (cloudData && cloudData.length > 0) {
-                    alert("ទាញយកទិន្នន័យពី Cloud สำเร็จ! 🎉");
-                    // ធ្វើការ Update ចូល Database ក្នុង LocalStorage វិញ
-                    console.log("Cloud Data:", cloudData);
-                    // (អាចបំពេញបន្ថែមជា Array Rooms តាមតម្រូវការ)
+                    let newRooms = cloudData.map((item, index) => ({
+                        id: index + 1,
+                        roomNum: item.roomNum || String(index + 1),
+                        tenant: item.tenant !== '-' ? item.tenant : '',
+                        phone: item.phone !== '-' ? item.phone : '',
+                        telegram: "",
+                        idCard: "",
+                        deposit: 0,
+                        contractEnd: "",
+                        price: (item.roomPrice / (currentBranch.exchangeRate || 4000)) || 40,
+                        extraName: "",
+                        extraPrice: 0,
+                        dueDate: "ថ្ងៃទី ១០",
+                        elecOld: 0,
+                        elecNew: 0,
+                        waterOld: 0,
+                        waterNew: 0,
+                        isPaid: false
+                    }));
+
+                    currentBranch.rooms = newRooms;
+                    saveLocal();
+                    alert("ទាញយកទិន្នន័យពី Cloud មកបង្ហាញជោគជ័យ! 🎉");
                 } else {
                     alert("មិនមានទិន្នន័យនៅលើ Cloud ទេ!");
                 }
@@ -1560,8 +1581,8 @@
             document.getElementById('settingWaterPrice').value = b.waterPrice;
             document.getElementById('settingTrashPrice').value = b.trashPrice;
             document.getElementById('settingExchangeRate').value = b.exchangeRate || 4000;
-            document.getElementById('settingApiUrl').value = b.apiUrl || '';
-            document.getElementById('settingOwnerName').value = b.ownerName;
+            document.getElementById('settingApiUrl').value = b.apiUrl || 'https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec';
+            document.getElementById('settingOwnerName').value = b.ownerName || '';
             renderDeleteMonthSelector();
         }
 
@@ -1584,7 +1605,7 @@
         function saveNewBranch(e) {
             e.preventDefault();
             let name = document.getElementById('modalBranchName').value;
-            db.history[db.activeMonth].push({ name: name, elecPrice: 2000, waterPrice: 2000, trashPrice: 5000, exchangeRate: 4000, apiUrl: "", ownerName: "https://i.imgur.com/9gHl6j2.jpeg", expenses: [], rooms: [] });
+            db.history[db.activeMonth].push({ name: name, elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec", ownerName: "", expenses: [], rooms: [] });
             db.activeBranchIndex = db.history[db.activeMonth].length - 1;
             saveLocal(); closeModal('branchModal');
         }
