@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល Pro Ultra Max</title>
+    <title>ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល Pro Ultra Max (Full 5 Features Integration)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -22,9 +22,9 @@
         
         @media print {
             body * { visibility: hidden; }
-            #printable-area, #printable-area *, #summaryModal, #summaryModal *, #thermalModal, #thermalModal *, #checkoutModal, #checkoutModal * { visibility: visible; }
+            #printable-area, #printable-area *, #summaryModal, #summaryModal *, #thermalModal, #thermalModal *, #checkoutModal, #checkoutModal *, #singleInvoiceModal, #singleInvoiceModal * { visibility: visible; }
             #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
-            #summaryModal, #thermalModal, #checkoutModal { position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
+            #summaryModal, #thermalModal, #checkoutModal, #singleInvoiceModal { position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
             .no-print { display: none !important; }
             @page { size: A4 portrait; margin: 5mm 8mm; }
             .page-break { page-break-after: always !important; break-after: page !important; }
@@ -100,8 +100,10 @@
         <div class="flex gap-2 mb-6 no-print overflow-x-auto pb-1">
             <button onclick="switchTab('rooms')" id="tab-rooms" class="px-4 py-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-md transition whitespace-nowrap">🏢 បន្ទប់ & វិក្កយបត្រ</button>
             <button onclick="switchTab('expenses')" id="tab-expenses" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">🛠️ កត់ត្រាចំណាយ (Expenses)</button>
+            <!-- Feature 5 Tab Integration -->
+            <button onclick="switchTab('historyLogs')" id="tab-historyLogs" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">📜 ប្រវត្តិបង់ប្រាក់ (History Logs)</button>
             <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">📈 ផ្ទាំង Dashboard & ក្រាហ្វិក</button>
-            <button onclick="switchTab('settings')" id="tab-settings" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">⚙️ កំណត់តម្លៃ, User & Backup</button>
+            <button onclick="switchTab('settings')" id="tab-settings" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-700 shadow-sm border hover:bg-slate-50 transition whitespace-nowrap">⚙️ កំណត់តម្លៃ, User & Cloud</button>
         </div>
 
         <!-- TAB 1: Rooms & Calculation -->
@@ -172,7 +174,30 @@
             </div>
         </div>
 
-        <!-- TAB 3: Analytics Dashboard -->
+        <!-- TAB 3: Payment History Logs (Feature 5) -->
+        <div id="section-historyLogs" class="space-y-6 hidden no-print">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                <h3 class="font-bold text-slate-800 text-sm">📜 ប្រវត្តិការទូទាត់ប្រាក់ (Payment History Logs)</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 border-b font-bold text-slate-600">
+                                <th class="p-2.5">កាលបរិច្ឆេទ & ម៉ោង</th>
+                                <th class="p-2.5">បន្ទប់</th>
+                                <th class="p-2.5">ឈ្មោះអ្នកជួល</th>
+                                <th class="p-2.5">ទឹកប្រាក់បង់</th>
+                                <th class="p-2.5">វិធីសាស្ត្របង់</th>
+                                <th class="p-2.5 text-center">Slip ធនាគារ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyLogsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: Analytics Dashboard -->
         <div id="section-dashboard" class="space-y-6 hidden no-print">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
@@ -209,13 +234,13 @@
             </div>
         </div>
 
-        <!-- TAB 4: Branch Settings & User Management & Backup -->
+        <!-- TAB 5: Branch Settings & Cloud Sync (Feature 1 Integration) -->
         <div id="section-settings" class="space-y-6 hidden no-print">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
                 
                 <!-- Branch Settings -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
-                    <h2 class="text-sm font-bold mb-4 text-slate-800 border-b pb-2">⚙️ កំណត់តម្លៃសាខា</h2>
+                    <h2 class="text-sm font-bold mb-4 text-slate-800 border-b pb-2">⚙️ កំណត់តម្លៃសាខា & Cloud Database</h2>
                     <div class="space-y-3 text-xs">
                         <div>
                             <label class="block font-semibold mb-1 text-slate-700">ឈ្មោះសាខា:</label>
@@ -242,11 +267,19 @@
                             </div>
                         </div>
                         <div>
+                            <label class="block font-semibold mb-1 text-slate-700">Bakong Account ID (សម្រាប់ Dynamic KHQR):</label>
+                            <input type="text" id="settingBakongId" placeholder="sovphorn@acledda" class="w-full border rounded-xl p-2.5 outline-none font-inter">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-700">Cloud Database URL (Supabase/Firebase REST API):</label>
+                            <input type="text" id="settingCloudUrl" placeholder="https://your-project.supabase.co/rest/v1/..." class="w-full border rounded-xl p-2.5 outline-none font-inter">
+                        </div>
+                        <div>
                             <label class="block font-semibold mb-1 text-slate-700">Google Sheets API URL:</label>
                             <input type="text" id="settingApiUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border rounded-xl p-2.5 outline-none font-inter text-xs">
                         </div>
                         <div>
-                            <label class="block font-semibold mb-1 text-slate-700">URL រូបភាព QR Code (KHQR Image):</label>
+                            <label class="block font-semibold mb-1 text-slate-700">URL រូបភាព QR Code (Static KHQR Image):</label>
                             <input type="text" id="settingOwnerName" placeholder="https://i.imgur.com/9gHl6j2.jpeg" class="w-full border rounded-xl p-2.5 outline-none">
                         </div>
                         <div class="pt-2">
@@ -377,18 +410,26 @@
         </div>
     </div>
 
-    <div id="cashModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
-            <h3 class="text-sm font-bold text-indigo-700">💵 គណនាលុយអាប់ & ស្កេន Slip ធនាគារ</h3>
+    <!-- Feature 2: Cash & Dynamic KHQR & OCR Bank Slip Modal -->
+    <div id="cashModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-sm font-bold text-indigo-700">💵 ទូទាត់ប្រាក់, Dynamic KHQR & ស្កេន Slip</h3>
             <div class="text-xs space-y-1 border-b pb-2">
                 <div>បន្ទប់: <b id="cashRoomNum"></b> | អ្នកជួល: <b id="cashTenant"></b></div>
                 <div>ប្រាក់សរុបត្រូវបង់: <b class="text-rose-600 font-inter text-sm" id="cashTotalAmount"></b></div>
             </div>
 
+            <!-- Dynamic KHQR Frame -->
+            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-200 text-center space-y-1.5 text-xs">
+                <div class="font-bold text-slate-700">QR Code បង់ប្រាក់ស្វ័យប្រវត្ត (ស្កេនចំចំនួនទឹកប្រាក់)៖</div>
+                <img id="dynamicQrImg" src="" class="w-36 h-36 mx-auto object-contain border rounded-xl bg-white p-1">
+            </div>
+
             <!-- OCR Bank Slip Upload Feature -->
             <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 space-y-1.5 text-xs">
-                <label class="block font-bold text-purple-900">🧾 Upload Slip ធនាគារ (Smart OCR Scan):</label>
+                <label class="block font-bold text-purple-900">🧾 Upload Slip ធនាគារ (OCR & Logs):</label>
                 <input type="file" id="slipFileInput" accept="image/*" onchange="scanBankSlipOCR(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white">
+                <input type="hidden" id="slipBase64Input">
                 <div id="ocrStatusText" class="text-[11px] text-purple-700 font-medium hidden">កំពុងស្កេនរូបភាព... ⏳</div>
             </div>
 
@@ -402,8 +443,32 @@
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeModal('cashModal')" class="px-3 py-2 bg-slate-100 rounded-xl text-xs font-semibold">បិទ</button>
-                <button onclick="markAsPaidFromCashModal()" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm">✅ កត់ត្រាថាបានបង់</button>
+                <button onclick="markAsPaidFromCashModal()" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm">✅ កត់ត្រាថាបានបង់ & บันทึก Logs</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Feature 4: Single Room PDF Invoice Modal -->
+    <div id="singleInvoiceModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-2 no-print">
+                <h3 class="text-sm font-bold text-indigo-700">📄 វិក្កយបត្រដាច់ដោយឡែក (Single Room Invoice)</h3>
+                <div class="flex gap-2">
+                    <button onclick="downloadSinglePDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm">📥 ទាញយក PDF</button>
+                    <button onclick="closeModal('singleInvoiceModal')" class="bg-slate-200 px-3 py-1.5 rounded-xl font-semibold text-xs">បិទ</button>
+                </div>
+            </div>
+            <div id="singleInvoicePrintArea" class="bg-white border rounded-xl p-5 text-xs space-y-3 font-sans">
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 5: View Bank Slip Modal -->
+    <div id="slipModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-3 text-center shadow-2xl">
+            <h3 class="text-sm font-bold">🧾 រូបភាព Slip ធនាគារ</h3>
+            <img id="viewSlipImg" src="" class="max-h-[60vh] mx-auto object-contain rounded-lg border">
+            <button onclick="closeModal('slipModal')" class="px-4 py-2 bg-slate-200 rounded-xl text-xs font-semibold">បិទ</button>
         </div>
     </div>
 
@@ -580,7 +645,7 @@
             <form onsubmit="saveExpenseData(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-semibold mb-1">បរិយាយចំណាយ:</label>
-                    <input type="text" id="expDesc" required placeholder="ឧ. ទិញអំពូលភ្លើងកែច្នៃ" class="w-full border rounded-xl p-2 outline-none">
+                    <input type="text" id="expDesc" required placeholder="ឧ. ទិញអំពិលភ្លើងកែច្នៃ" class="w-full border rounded-xl p-2 outline-none">
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">ប្រភេទចំណាយ:</label>
@@ -637,55 +702,53 @@
     <script>
         const TELEGRAM_BOT_TOKEN = "8674474790:AAG0rMsR-nICq0rqTBhcLi3gePaFCcM2ILE";
 
-        let rawDb = localStorage.getItem('rental_sys_db');
+        let rawDb = localStorage.getItem('rental_sys_db_v2');
         let db = {};
 
         if (rawDb) {
-            let parsed = JSON.parse(rawDb);
-            if (parsed.branches && !parsed.history) {
+            db = JSON.parse(rawDb);
+        } else {
+            // Check old localstorage name
+            let oldDb = localStorage.getItem('rental_sys_db');
+            if (oldDb) {
+                let parsed = JSON.parse(oldDb);
                 db = {
                     activeBranchIndex: parsed.activeBranchIndex || 0,
+                    activeMonth: parsed.activeMonth || "10/2026",
+                    users: parsed.users || [
+                        { id: 1, username: "Admin (ម្ចាស់ផ្ទះ)", pin: "1234", role: "admin", branches: ["all"] },
+                        { id: 2, username: "Staff (បុគ្គលិក)", pin: "1234", role: "staff", branches: [0] }
+                    ],
+                    history: parsed.history || { "10/2026": parsed.branches || [] }
+                };
+            } else {
+                db = {
+                    activeBranchIndex: 0,
                     activeMonth: "10/2026",
                     users: [
                         { id: 1, username: "Admin (ម្ចាស់ផ្ទះ)", pin: "1234", role: "admin", branches: ["all"] },
                         { id: 2, username: "Staff (បុគ្គលិក)", pin: "1234", role: "staff", branches: [0] }
                     ],
-                    history: { "10/2026": parsed.branches }
+                    history: {
+                        "10/2026": [
+                            {
+                                name: "សាខាទី១ (តាកែវ)",
+                                elecPrice: 2000,
+                                waterPrice: 3000,
+                                trashPrice: 3000,
+                                exchangeRate: 4000,
+                                bakongId: "sovphorn@acledda",
+                                cloudUrl: "",
+                                apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec",
+                                ownerName: "",
+                                expenses: [{ id: 1, date: "2026-10-01", desc: "ទិញអំពិលភ្លើង", cat: "ជួសជុល & ថែទាំ", amount: 25000 }],
+                                rooms: [{ id: 1, roomNum: "01", tenant: "គុ រណី", phone: "012 333 222", telegram: "1082370017", idCard: "", deposit: 40, contractEnd: "2027-04-10", price: 40, extraName: "ថ្លៃផ្ញើកង់", extraPrice: 20000, dueDate: "ថ្ងៃទី ១០", elecOld: 50, elecNew: 90, waterOld: 2256, waterNew: 2260, isPaid: false }],
+                                historyLogs: []
+                            }
+                        ]
+                    }
                 };
-            } else {
-                db = parsed;
-                if (!db.users) {
-                    db.users = [
-                        { id: 1, username: "Admin (ម្ចាស់ផ្ទះ)", pin: "1234", role: "admin", branches: ["all"] },
-                        { id: 2, username: "Staff (បុគ្គលិក)", pin: "1234", role: "staff", branches: [0] }
-                    ];
-                }
             }
-        } else {
-            db = {
-                activeBranchIndex: 0,
-                activeMonth: "10/2026",
-                users: [
-                    { id: 1, username: "Admin (ម្ចាស់ផ្ទះ)", pin: "1234", role: "admin", branches: ["all"] },
-                    { id: 2, username: "Staff (បុគ្គលិក)", pin: "1234", role: "staff", branches: [0] }
-                ],
-                history: {
-                    "10/2026": [
-                        {
-                            name: "សាខាទី១ (តាកែវ)",
-                            elecPrice: 2000,
-                            waterPrice: 3000,
-                            trashPrice: 3000,
-                            exchangeRate: 4000,
-                            phone: "015 520 085",
-                            apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec",
-                            ownerName: "",
-                            expenses: [{ id: 1, date: "2026-10-01", desc: "ទិញអំពិលភ្លើង", cat: "ជួសជុល & ថែទាំ", amount: 25000 }],
-                            rooms: [{ id: 1, roomNum: "01", tenant: "គុ រណី", phone: "012 333 222", telegram: "1082370017", idCard: "", deposit: 40, contractEnd: "2027-04-10", price: 40, extraName: "ថ្លៃផ្ញើកង់", extraPrice: 20000, dueDate: "ថ្ងៃទី ១០", elecOld: 50, elecNew: 90, waterOld: 2256, waterNew: 2260, isPaid: false }]
-                        }
-                    ]
-                }
-            };
         }
 
         let currentLoggedInUser = db.users[0];
@@ -695,7 +758,51 @@
         let breakdownChartObj = null;
         let statusChartObj = null;
 
-        // Populate User Select Box in Login Overlay
+        // Feature 1: Cloud Database Auto Sync Integration
+        async function syncToCloudDatabase() {
+            let b = getCurrentBranch();
+            if(b && b.cloudUrl && b.cloudUrl.trim() !== "") {
+                try {
+                    await fetch(b.cloudUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(db)
+                    });
+                    console.log("Cloud Database Synced!");
+                } catch(e) { console.error("Cloud Database Sync Error:", e); }
+            }
+        }
+
+        function saveLocal() {
+            localStorage.setItem('rental_sys_db_v2', JSON.stringify(db));
+            renderApp();
+            syncToCloudDatabase();
+        }
+
+        function getCurrentBranch() {
+            if(!db.history) db.history = {};
+            if(!db.history[db.activeMonth]) {
+                let months = Object.keys(db.history);
+                if(months.length > 0) {
+                    db.history[db.activeMonth] = JSON.parse(JSON.stringify(db.history[months[0]]));
+                } else {
+                    db.history[db.activeMonth] = [{ name: "សាខាទី១ (តាកែវ)", elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, bakongId: "", cloudUrl: "", apiUrl: "", ownerName: "", expenses: [], rooms: [], historyLogs: [] }];
+                }
+            }
+
+            let availableBranches = db.history[db.activeMonth] || [];
+            if(currentLoggedInUser.role !== 'admin' && !currentLoggedInUser.branches.includes('all')) {
+                let allowedIndices = currentLoggedInUser.branches;
+                if(!allowedIndices.includes(db.activeBranchIndex)) {
+                    db.activeBranchIndex = allowedIndices.length > 0 ? allowedIndices[0] : 0;
+                }
+            }
+
+            if(!availableBranches[db.activeBranchIndex]) db.activeBranchIndex = 0;
+            return availableBranches[db.activeBranchIndex];
+        }
+
+        // Login Overlay Handlers
         function renderLoginUserOptions() {
             let select = document.getElementById('loginUserSelect');
             select.innerHTML = '';
@@ -743,36 +850,8 @@
             }
         }
 
-        function saveLocal() {
-            localStorage.setItem('rental_sys_db', JSON.stringify(db));
-            renderApp();
-        }
-
-        function getCurrentBranch() {
-            if(!db.history) db.history = {};
-            if(!db.history[db.activeMonth]) {
-                let months = Object.keys(db.history);
-                if(months.length > 0) {
-                    db.history[db.activeMonth] = JSON.parse(JSON.stringify(db.history[months[0]]));
-                } else {
-                    db.history[db.activeMonth] = [{ name: "សាខាទី១ (តាកែវ)", elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec", ownerName: "", expenses: [], rooms: [] }];
-                }
-            }
-
-            let availableBranches = db.history[db.activeMonth] || [];
-            if(currentLoggedInUser.role !== 'admin' && !currentLoggedInUser.branches.includes('all')) {
-                let allowedIndices = currentLoggedInUser.branches;
-                if(!allowedIndices.includes(db.activeBranchIndex)) {
-                    db.activeBranchIndex = allowedIndices.length > 0 ? allowedIndices[0] : 0;
-                }
-            }
-
-            if(!availableBranches[db.activeBranchIndex]) db.activeBranchIndex = 0;
-            return availableBranches[db.activeBranchIndex];
-        }
-
         function switchTab(tab) {
-            ['rooms', 'expenses', 'dashboard', 'settings'].forEach(t => {
+            ['rooms', 'expenses', 'historyLogs', 'dashboard', 'settings'].forEach(t => {
                 let el = document.getElementById(`section-${t}`);
                 if(el) el.classList.add('hidden');
                 let tabEl = document.getElementById(`tab-${t}`);
@@ -787,6 +866,7 @@
             if(tab === 'dashboard') renderDashboardCharts();
             if(tab === 'settings') loadSettingsForm();
             if(tab === 'expenses') renderExpenses();
+            if(tab === 'historyLogs') renderHistoryLogs();
         }
 
         function renderMonthPicker() {
@@ -913,6 +993,8 @@
                         <td class="p-3 text-center">${statusBadge}</td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center gap-1">
+                                <!-- Feature 4 Integration: Single Room PDF Button -->
+                                <button onclick="openSingleInvoiceModal(${r.id}, ${grandTotal})" class="bg-blue-600 text-white font-bold px-2 py-1 rounded hover:bg-blue-700 text-[10px]" title="វិក្កយបត្រដាច់ដោយឡែក">📄 វិក្កយបត្រ</button>
                                 <button onclick="openThermalReceipt(${r.id}, ${grandTotal})" class="bg-purple-600 text-white font-bold px-2 py-1 rounded hover:bg-purple-700 text-[10px]" title="ព្រីនបង្កាន់ដៃតូច">🧾 ព្រីន</button>
                                 <button onclick="sendSingleInvoice(${r.id}, ${grandTotal})" class="bg-indigo-600 text-white font-bold px-2 py-1 rounded hover:bg-indigo-700 text-[10px]" title="ផ្ញើវិក្កយបត្រ">📤 ផ្ញើ</button>
                                 <button onclick="sendReminder(${r.id}, ${grandTotal})" class="bg-sky-500 text-white font-bold px-2 py-1 rounded hover:bg-sky-600 text-[10px]" title="រំលឹក">🔔 រំលឹក</button>
@@ -927,7 +1009,163 @@
             });
         }
 
-        // 📊 Open Detailed Summary Modal Table Feature
+        // Feature 2 Integration: Cash & Dynamic KHQR Modal Generator
+        function openCashModal(roomId, grandTotal) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === roomId);
+            if(r) {
+                currentActiveRoomIdForCash = roomId;
+                currentGrandTotalForCash = grandTotal;
+                document.getElementById('cashRoomNum').innerText = r.roomNum;
+                document.getElementById('cashTenant').innerText = r.tenant || 'N/A';
+                document.getElementById('cashTotalAmount').innerText = grandTotal.toLocaleString() + " ៛";
+                document.getElementById('cashGivenInput').value = "";
+                document.getElementById('cashChangeOutput').innerText = "0 ៛";
+                document.getElementById('slipBase64Input').value = "";
+                document.getElementById('slipFileInput').value = "";
+
+                // Dynamic KHQR Generator API
+                let bakongId = b.bakongId || "sovphorn@acledda";
+                let dynamicQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=KHQR_${bakongId}_${grandTotal}_KHR`;
+                document.getElementById('dynamicQrImg').src = dynamicQrUrl;
+
+                document.getElementById('cashModal').classList.remove('hidden');
+            }
+        }
+
+        function calculateChange() {
+            let given = parseFloat(document.getElementById('cashGivenInput').value) || 0;
+            let change = given - currentGrandTotalForCash;
+            let changeOutput = document.getElementById('cashChangeOutput');
+            if(change >= 0) {
+                changeOutput.innerText = change.toLocaleString() + " ៛";
+                changeOutput.className = "text-xl font-bold text-emerald-600 font-inter mt-1";
+            } else {
+                changeOutput.innerText = "ខ្វះ " + Math.abs(change).toLocaleString() + " ៛";
+                changeOutput.className = "text-xl font-bold text-rose-600 font-inter mt-1";
+            }
+        }
+
+        // Feature 5 Integration: Record History Logs
+        async function markAsPaidFromCashModal() {
+            if(currentActiveRoomIdForCash) {
+                let b = getCurrentBranch();
+                let r = b.rooms.find(x => x.id === currentActiveRoomIdForCash);
+                if(r) { 
+                    r.isPaid = true; 
+                    
+                    let now = new Date();
+                    let dateStr = now.toISOString().slice(0,10) + ' ' + now.toTimeString().slice(0,5);
+                    let slipImg = document.getElementById('slipBase64Input').value;
+
+                    if(!b.historyLogs) b.historyLogs = [];
+                    b.historyLogs.unshift({
+                        date: dateStr,
+                        roomNum: r.roomNum,
+                        tenant: r.tenant || 'N/A',
+                        amount: currentGrandTotalForCash,
+                        method: slipImg ? "វេរប្រាក់ (QR Scan)" : "សាច់ប្រាក់ផ្ទាល់",
+                        slip: slipImg
+                    });
+
+                    saveLocal(); 
+
+                    if(r.telegram) {
+                        let given = parseFloat(document.getElementById('cashGivenInput').value) || currentGrandTotalForCash;
+                        let change = Math.max(0, given - currentGrandTotalForCash);
+                        let targetChatId = r.telegram.trim();
+                        if (targetChatId.startsWith('@') || isNaN(targetChatId)) { if (!targetChatId.startsWith('@')) targetChatId = '@' + targetChatId; }
+
+                        let receiptText = `🧾 <b>បង្កាន់ដៃទទួលប្រាក់ (Payment Receipt)</b>\n\n` +
+                                          `🏠 បន្ទប់: <b>${r.roomNum}</b> (${b.name})\n` +
+                                          `👤 អ្នកជួល: <b>${r.tenant || 'N/A'}</b>\n` +
+                                          `📅 ខែ: <b>${db.activeMonth}</b>\n` +
+                                          `💰 ប្រាក់បានបង់: <b>${currentGrandTotalForCash.toLocaleString()} ៛</b>\n` +
+                                          `💵 ទទួលបាន: <b>${given.toLocaleString()} ៛</b>\n` +
+                                          `🪙 លុយអាប់ជូន: <b>${change.toLocaleString()} ៛</b>\n` +
+                                          `✅ ស្ថានភាព: <b>បង់ប្រាក់រួចរាល់</b>\n\n` +
+                                          `🙏 សូមអរគុណច្រើន!`;
+                        try {
+                            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                                method: "POST", headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ chat_id: targetChatId, text: receiptText, parse_mode: "HTML" })
+                            });
+                        } catch(err) { console.error(err); }
+                    }
+                }
+                closeModal('cashModal');
+                alert("បានកត់ត្រាថាបានបង់ប្រាក់, រក្សាទុក History Logs និងផ្ញើបង្កាន់ដៃជោគជ័យ! 🎉");
+            }
+        }
+
+        // Feature 5 Renderer: Payment History Logs
+        function renderHistoryLogs() {
+            let b = getCurrentBranch();
+            let tbody = document.getElementById('historyLogsTableBody');
+            tbody.innerHTML = '';
+            if(!b.historyLogs || b.historyLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">មិនទាន់មានប្រវត្តិទូទាត់ប្រាក់នៅឡើយទេ</td></tr>`;
+                return;
+            }
+            b.historyLogs.forEach(log => {
+                let slipBtn = log.slip ? `<button onclick="viewSlip('${log.slip}')" class="text-purple-600 font-bold underline">មើល Slip</button>` : `<span class="text-slate-400">អត់មាន Slip</span>`;
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-2.5 font-inter">${log.date}</td>
+                        <td class="p-2.5 font-bold font-inter">${log.roomNum}</td>
+                        <td class="p-2.5 font-semibold">${log.tenant}</td>
+                        <td class="p-2.5 font-inter font-bold text-emerald-600">${log.amount.toLocaleString()} ៛</td>
+                        <td class="p-2.5">${log.method}</td>
+                        <td class="p-2.5 text-center">${slipBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function viewSlip(base64) {
+            document.getElementById('viewSlipImg').src = base64;
+            document.getElementById('slipModal').classList.remove('hidden');
+        }
+
+        // Feature 4 Integration: Single Room PDF Invoice Modal
+        function openSingleInvoiceModal(roomId, grandTotal) {
+            let b = getCurrentBranch();
+            let r = b.rooms.find(x => x.id === roomId);
+            if(!r) return;
+            let rate = b.exchangeRate || 4000;
+            let elecUsed = Math.max(0, (r.elecNew || 0) - (r.elecOld || 0));
+            let waterUsed = Math.max(0, (r.waterNew || 0) - (r.waterOld || 0));
+
+            let area = document.getElementById('singleInvoicePrintArea');
+            area.innerHTML = `
+                <div class="text-center font-bold text-indigo-700 text-sm">${b.name}</div>
+                <div class="text-center font-bold text-slate-800 text-base">វិក្កយបត្រប្រចាំខែ ${db.activeMonth}</div>
+                <div class="border-t pt-2 mt-2 space-y-1">
+                    <div>បន្ទប់: <b>${r.roomNum}</b> | អ្នកជួល: <b>${r.tenant || 'N/A'}</b></div>
+                    <div>ថ្លៃបន្ទប់: $${r.price} (${(r.price * rate).toLocaleString()} ៛)</div>
+                    <div>ថ្លៃសំរាម: ${b.trashPrice.toLocaleString()} ៛</div>
+                    <div>ទឹក (${waterUsed}m³): ${(waterUsed * b.waterPrice).toLocaleString()} ៛</div>
+                    <div>ភ្លើង (${elecUsed}k): ${(elecUsed * b.elecPrice).toLocaleString()} ៛</div>
+                </div>
+                <div class="border-t pt-2 mt-2 flex justify-between font-bold text-sm text-rose-600 font-inter">
+                    <span>ប្រាក់សរុបត្រូវបង់:</span>
+                    <span>${grandTotal.toLocaleString()} ៛</span>
+                </div>
+            `;
+            document.getElementById('singleInvoiceModal').classList.remove('hidden');
+        }
+
+        async function downloadSinglePDF() {
+            let element = document.getElementById('singleInvoicePrintArea');
+            const { jsPDF } = window.jspdf;
+            let canvas = await html2canvas(element, { scale: 2 });
+            let imgData = canvas.toDataURL('image/png');
+            let pdf = new jsPDF('p', 'mm', 'a5');
+            pdf.addImage(imgData, 'PNG', 10, 10, 130, 0);
+            pdf.save(`Single_Invoice_${db.activeMonth.replace('/','-')}.pdf`);
+        }
+
+        // Summary Modal Table
         function openMonthlySummary() {
             document.getElementById('summaryActiveMonthDisplay').innerText = db.activeMonth;
             let container = document.getElementById('summaryContent');
@@ -1050,7 +1288,6 @@
             document.getElementById('summaryModal').classList.remove('hidden');
         }
 
-        // 📥 PDF Download Function Fix (html2canvas & jsPDF Integration)
         async function downloadPDF() {
             let container = document.getElementById('printable-area');
             if (!container || container.children.length === 0) return alert("មិនមានវិក្កយបត្រសម្រាប់ទាញយកទេ!");
@@ -1061,7 +1298,6 @@
                 const { jsPDF } = window.jspdf;
                 let pdf = new jsPDF('p', 'mm', 'a4');
                 let pdfWidth = pdf.internal.pageSize.getWidth();
-                let pdfHeight = pdf.internal.pageSize.getHeight();
 
                 let cards = document.querySelectorAll('.invoice-card-print');
                 for (let i = 0; i < cards.length; i++) {
@@ -1087,13 +1323,13 @@
             }
         }
 
-        // 👥 User Management Functions
+        // Users Management
         function renderUsersList() {
             let tbody = document.getElementById('usersTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
 
-            db.users.forEach((u, idx) => {
+            db.users.forEach((u) => {
                 let branchesText = u.branches.includes('all') ? 'គ្រប់សាខាទាំងអស់' : u.branches.map(bIdx => (db.history[db.activeMonth][bIdx] || {}).name || `សាខា #${bIdx+1}`).join(", ");
                 tbody.innerHTML += `
                     <tr class="border-b border-slate-100 hover:bg-slate-50">
@@ -1198,7 +1434,7 @@
             }
         }
 
-        // Camera AI Meter Photo Scan Section
+        // Camera AI Meter Scan & Bank Slip OCR
         function scanMeterPhotoOCR(event, targetInputId) {
             let file = event.target.files[0];
             if (!file) return;
@@ -1217,9 +1453,41 @@
                 } else {
                     alert("មិនអាចអានលេខអានច្បាស់ពីថតរូបបានទេ។ សូមបំពេញដោយដៃ!");
                 }
-            }).catch(err => {
+            }).catch(() => {
                 statusText.classList.add('hidden');
                 alert("មានបញ្ហាក្នុងការស្កេនរូបថតកុងទ័រ!");
+            });
+        }
+
+        function scanBankSlipOCR(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('slipBase64Input').value = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            let statusText = document.getElementById('ocrStatusText');
+            statusText.innerText = "កំពុងស្កេនរូបភាព Slip ធនាគារ... ⏳";
+            statusText.classList.remove('hidden');
+
+            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+                statusText.classList.add('hidden');
+                let numbers = text.match(/[\d,.]+/g);
+                if (numbers) {
+                    let cleanNumbers = numbers.map(n => parseFloat(n.replace(/,/g, ''))).filter(n => n > 1000);
+                    if (cleanNumbers.length > 0) {
+                        let detectedAmount = Math.max(...cleanNumbers);
+                        document.getElementById('cashGivenInput').value = detectedAmount;
+                        calculateChange();
+                        alert(`✨ ស្កេន Slip ជោគជ័យ! ចំនួនទឹកប្រាក់៖ ${detectedAmount.toLocaleString()} ៛`);
+                    } else { alert("មិនអាចអានចំនួនទឹកប្រាក់ពី Slip ធនាគារបានទេ។"); }
+                } else { alert("មិនអាចស្កេនអត្ថបទលើ Slip បានទេ។"); }
+            }).catch(() => {
+                statusText.classList.add('hidden');
+                alert("មានបញ្ហាក្នុងការស្កេនរូបភាព Slip!");
             });
         }
 
@@ -1276,32 +1544,6 @@
             }
 
             return "ខ្ញុំអាចជួយប្រាប់ពី៖ បន្ទប់មិនទាន់បង់លុយ, ប្រាក់ចំណេញប្រចាំខែ, ឬបន្ទប់ជិតផុតកុងត្រា។";
-        }
-
-        function scanBankSlipOCR(event) {
-            let file = event.target.files[0];
-            if (!file) return;
-
-            let statusText = document.getElementById('ocrStatusText');
-            statusText.innerText = "កំពុងស្កេនរូបភាព Slip ធនាគារ... ⏳";
-            statusText.classList.remove('hidden');
-
-            Tesseract.recognize(file, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
-                statusText.classList.add('hidden');
-                let numbers = text.match(/[\d,.]+/g);
-                if (numbers) {
-                    let cleanNumbers = numbers.map(n => parseFloat(n.replace(/,/g, ''))).filter(n => n > 1000);
-                    if (cleanNumbers.length > 0) {
-                        let detectedAmount = Math.max(...cleanNumbers);
-                        document.getElementById('cashGivenInput').value = detectedAmount;
-                        calculateChange();
-                        alert(`✨ ស្កេន Slip ជោគជ័យ! ចំនួនទឹកប្រាក់៖ ${detectedAmount.toLocaleString()} ៛`);
-                    } else { alert("មិនអាចអានចំនួនទឹកប្រាក់ពី Slip ធនាគារបានទេ។"); }
-                } else { alert("មិនអាចស្កេនអត្ថបទលើ Slip បានទេ។"); }
-            }).catch(err => {
-                statusText.classList.add('hidden');
-                alert("មានបញ្ហាក្នុងការស្កេនរូបភាព Slip!");
-            });
         }
 
         function handleIdCardUpload(event) {
@@ -1475,6 +1717,7 @@
                 let nextBranches = JSON.parse(JSON.stringify(currentBranches));
                 nextBranches.forEach(b => {
                     b.expenses = [];
+                    b.historyLogs = [];
                     b.rooms.forEach(r => {
                         r.elecOld = r.elecNew || r.elecOld;
                         r.waterOld = r.waterNew || r.waterOld;
@@ -1593,68 +1836,6 @@
             if(r) { r.isPaid = !r.isPaid; saveLocal(); }
         }
 
-        function openCashModal(roomId, grandTotal) {
-            let b = getCurrentBranch();
-            let r = b.rooms.find(x => x.id === roomId);
-            if(r) {
-                currentActiveRoomIdForCash = roomId;
-                currentGrandTotalForCash = grandTotal;
-                document.getElementById('cashRoomNum').innerText = r.roomNum;
-                document.getElementById('cashTenant').innerText = r.tenant || 'N/A';
-                document.getElementById('cashTotalAmount').innerText = grandTotal.toLocaleString() + " ៛";
-                document.getElementById('cashGivenInput').value = "";
-                document.getElementById('cashChangeOutput').innerText = "0 ៛";
-                document.getElementById('cashModal').classList.remove('hidden');
-            }
-        }
-
-        function calculateChange() {
-            let given = parseFloat(document.getElementById('cashGivenInput').value) || 0;
-            let change = given - currentGrandTotalForCash;
-            let changeOutput = document.getElementById('cashChangeOutput');
-            if(change >= 0) {
-                changeOutput.innerText = change.toLocaleString() + " ៛";
-                changeOutput.className = "text-xl font-bold text-emerald-600 font-inter mt-1";
-            } else {
-                changeOutput.innerText = "ខ្វះ " + Math.abs(change).toLocaleString() + " ៛";
-                changeOutput.className = "text-xl font-bold text-rose-600 font-inter mt-1";
-            }
-        }
-
-        async function markAsPaidFromCashModal() {
-            if(currentActiveRoomIdForCash) {
-                let b = getCurrentBranch();
-                let r = b.rooms.find(x => x.id === currentActiveRoomIdForCash);
-                if(r) { 
-                    r.isPaid = true; saveLocal(); 
-                    if(r.telegram) {
-                        let given = parseFloat(document.getElementById('cashGivenInput').value) || currentGrandTotalForCash;
-                        let change = Math.max(0, given - currentGrandTotalForCash);
-                        let targetChatId = r.telegram.trim();
-                        if (targetChatId.startsWith('@') || isNaN(targetChatId)) { if (!targetChatId.startsWith('@')) targetChatId = '@' + targetChatId; }
-
-                        let receiptText = `🧾 <b>បង្កាន់ដៃទទួលប្រាក់ (Payment Receipt)</b>\n\n` +
-                                          `🏠 បន្ទប់: <b>${r.roomNum}</b> (${b.name})\n` +
-                                          `👤 អ្នកជួល: <b>${r.tenant || 'N/A'}</b>\n` +
-                                          `📅 ខែ: <b>${db.activeMonth}</b>\n` +
-                                          `💰 ប្រាក់បានបង់: <b>${currentGrandTotalForCash.toLocaleString()} ៛</b>\n` +
-                                          `💵 ទទួលបាន: <b>${given.toLocaleString()} ៛</b>\n` +
-                                          `🪙 លុយអាប់ជូន: <b>${change.toLocaleString()} ៛</b>\n` +
-                                          `✅ ស្ថានភាព: <b>បង់ប្រាក់រួចរាល់</b>\n\n` +
-                                          `🙏 សូមអរគុណច្រើន!`;
-                        try {
-                            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                                method: "POST", headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ chat_id: targetChatId, text: receiptText, parse_mode: "HTML" })
-                            });
-                        } catch(err) { console.error(err); }
-                    }
-                }
-                closeModal('cashModal');
-                alert("បានកត់ត្រាថាបានបង់ប្រាក់ និងផ្ញើបង្កាន់ដៃជោគជ័យ! 🎉");
-            }
-        }
-
         function openInvoiceModal() {
             let currentBranch = getCurrentBranch();
             let container = document.getElementById('invoiceCardsContainer');
@@ -1671,7 +1852,8 @@
                 let grandTotal = roomPriceRiel + elecTotal + waterTotal + currentBranch.trashPrice + extra;
                 let isPageBreak = ((idx + 1) % 3 === 0) ? 'page-break' : '';
 
-                let defaultQr = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=KHQR_PAYMENT_${grandTotal}_RIEL`;
+                let bakongId = currentBranch.bakongId || "sovphorn@acledda";
+                let defaultQr = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=KHQR_${bakongId}_${grandTotal}_KHR`;
                 let qrUrl = currentBranch.ownerName && currentBranch.ownerName.trim() !== "" ? currentBranch.ownerName : defaultQr;
 
                 container.innerHTML += `
@@ -1763,7 +1945,7 @@
 
             let message = `🔔 <b>សេចក្តីជូនដំណឹងរំលឹកការបង់ប្រាក់</b>\n\n🏠 បន្ទប់: <b>${r.roomNum}</b>\n💰 ប្រាក់សរុបត្រូវបង់: <b style="color:red;">${grandTotal.toLocaleString()} ៛</b>`;
             try {
-                let res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ chat_id: targetChatId, text: message, parse_mode: "HTML" })
                 });
@@ -1883,6 +2065,8 @@
             document.getElementById('settingWaterPrice').value = b.waterPrice;
             document.getElementById('settingTrashPrice').value = b.trashPrice;
             document.getElementById('settingExchangeRate').value = b.exchangeRate || 4000;
+            document.getElementById('settingBakongId').value = b.bakongId || '';
+            document.getElementById('settingCloudUrl').value = b.cloudUrl || '';
             document.getElementById('settingApiUrl').value = b.apiUrl || 'https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec';
             document.getElementById('settingOwnerName').value = b.ownerName || '';
             renderDeleteMonthSelector();
@@ -1896,6 +2080,8 @@
             b.waterPrice = parseFloat(document.getElementById('settingWaterPrice').value) || 0;
             b.trashPrice = parseFloat(document.getElementById('settingTrashPrice').value) || 0;
             b.exchangeRate = parseFloat(document.getElementById('settingExchangeRate').value) || 4000;
+            b.bakongId = document.getElementById('settingBakongId').value;
+            b.cloudUrl = document.getElementById('settingCloudUrl').value;
             b.apiUrl = document.getElementById('settingApiUrl').value.trim();
             b.ownerName = document.getElementById('settingOwnerName').value;
             saveLocal();
@@ -1907,7 +2093,7 @@
         function saveNewBranch(e) {
             e.preventDefault();
             let name = document.getElementById('modalBranchName').value;
-            db.history[db.activeMonth].push({ name: name, elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec", ownerName: "", expenses: [], rooms: [] });
+            db.history[db.activeMonth].push({ name: name, elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, bakongId: "", cloudUrl: "", apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec", ownerName: "", expenses: [], rooms: [], historyLogs: [] });
             db.activeBranchIndex = db.history[db.activeMonth].length - 1;
             saveLocal(); closeModal('branchModal');
         }
