@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល</title>
+    <title>ប្រព័ន្ធគ្រប់គ្រងផ្ទះជួល Pro Ultra Max (Full 5 Features Integration)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -739,7 +739,7 @@
                                 exchangeRate: 4000,
                                 bakongId: "sovphorn@acledda",
                                 cloudUrl: "",
-                                apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec",
+                                apiUrl: "https://script.google.com/macros/s/AKfycbxFFZL0912IQlHJhW7kestY_3Dk-BJV-cl1ZsqEcGjSVxucmZQc4hejggB8l-BaRjymCg/exec",
                                 ownerName: "",
                                 expenses: [{ id: 1, date: "2026-10-01", desc: "ទិញអំពិលភ្លើង", cat: "ជួសជុល & ថែទាំ", amount: 25000 }],
                                 rooms: [{ id: 1, roomNum: "01", tenant: "គុ រណី", phone: "012 333 222", telegram: "1082370017", idCard: "", deposit: 40, contractEnd: "2027-04-10", price: 40, extraName: "ថ្លៃផ្ញើកង់", extraPrice: 20000, dueDate: "ថ្ងៃទី ១០", elecOld: 50, elecNew: 90, waterOld: 2256, waterNew: 2260, isPaid: false }],
@@ -1955,7 +1955,7 @@
 
         async function syncToSheet() {
             let currentBranch = getCurrentBranch();
-            let apiUrl = currentBranch.apiUrl || "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec";
+            let apiUrl = currentBranch.apiUrl || "https://script.google.com/macros/s/AKfycbxFFZL0912IQlHJhW7kestY_3Dk-BJV-cl1ZsqEcGjSVxucmZQc4hejggB8l-BaRjymCg/exec";
             
             let rate = currentBranch.exchangeRate || 4000;
             let payload = currentBranch.rooms.map(r => {
@@ -1995,7 +1995,7 @@
 
         async function loadFromCloudSheet() {
             let currentBranch = getCurrentBranch();
-            let apiUrl = currentBranch.apiUrl || "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec";
+            let apiUrl = currentBranch.apiUrl || "https://script.google.com/macros/s/AKfycbxFFZL0912IQlHJhW7kestY_3Dk-BJV-cl1ZsqEcGjSVxucmZQc4hejggB8l-BaRjymCg/exec";
 
             if (!confirm("តើបងចង់ទាញយកទិន្នន័យចុងក្រោយពី Cloud (Google Sheets) មកកាន់ឧបករណ៍នេះមែនទេ?")) return;
 
@@ -2067,7 +2067,7 @@
             document.getElementById('settingExchangeRate').value = b.exchangeRate || 4000;
             document.getElementById('settingBakongId').value = b.bakongId || '';
             document.getElementById('settingCloudUrl').value = b.cloudUrl || '';
-            document.getElementById('settingApiUrl').value = b.apiUrl || 'https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec';
+            document.getElementById('settingApiUrl').value = b.apiUrl || 'https://script.google.com/macros/s/AKfycbxFFZL0912IQlHJhW7kestY_3Dk-BJV-cl1ZsqEcGjSVxucmZQc4hejggB8l-BaRjymCg/exec';
             document.getElementById('settingOwnerName').value = b.ownerName || '';
             renderDeleteMonthSelector();
             renderUsersList();
@@ -2093,7 +2093,7 @@
         function saveNewBranch(e) {
             e.preventDefault();
             let name = document.getElementById('modalBranchName').value;
-            db.history[db.activeMonth].push({ name: name, elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, bakongId: "", cloudUrl: "", apiUrl: "https://script.google.com/macros/s/AKfycbx946GdFBUwbjUDKW-J3xaIlnVVPfe3dNaa2YSf9Lt6ufdQKiccl7PhDtPDj8ROaBCBAA/exec", ownerName: "", expenses: [], rooms: [], historyLogs: [] });
+            db.history[db.activeMonth].push({ name: name, elecPrice: 2000, waterPrice: 3000, trashPrice: 3000, exchangeRate: 4000, bakongId: "", cloudUrl: "", apiUrl: "https://script.google.com/macros/s/AKfycbxFFZL0912IQlHJhW7kestY_3Dk-BJV-cl1ZsqEcGjSVxucmZQc4hejggB8l-BaRjymCg/exec", ownerName: "", expenses: [], rooms: [], historyLogs: [] });
             db.activeBranchIndex = db.history[db.activeMonth].length - 1;
             saveLocal(); closeModal('branchModal');
         }
